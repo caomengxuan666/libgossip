@@ -1,8 +1,8 @@
 #ifndef GOSSIP_C_H
 #define GOSSIP_C_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,11 +51,11 @@ typedef struct gossip_node_view {
     uint64_t heartbeat;
     uint64_t version;
     gossip_node_status_t status;
-    
+
     // Business extension fields
     char role[64];
     char region[64];
-    
+
     // Statistics
     uint64_t sent_messages;
     uint64_t received_messages;
@@ -69,7 +69,7 @@ typedef struct gossip_message {
     gossip_node_id_t sender;
     gossip_message_type_t type;
     uint64_t timestamp;
-    gossip_node_view_t* entries;
+    gossip_node_view_t *entries;
     size_t entries_count;
 } gossip_message_t;
 
@@ -78,70 +78,70 @@ typedef struct gossip_message {
 // ---------------------------------------------------------
 
 /// Send message callback
-typedef void (*gossip_send_callback_t)(const gossip_message_t* msg, 
-                                       const gossip_node_view_t* target, 
-                                       void* user_data);
+typedef void (*gossip_send_callback_t)(const gossip_message_t *msg,
+                                       const gossip_node_view_t *target,
+                                       void *user_data);
 
 /// Event notification callback
-typedef void (*gossip_event_callback_t)(const gossip_node_view_t* node, 
-                                        gossip_node_status_t old_status, 
-                                        void* user_data);
+typedef void (*gossip_event_callback_t)(const gossip_node_view_t *node,
+                                        gossip_node_status_t old_status,
+                                        void *user_data);
 
 // ---------------------------------------------------------
 // Core API functions
 // ---------------------------------------------------------
 
 /// Create a new gossip core instance
-gossip_core_t* gossip_core_create(const gossip_node_view_t* self_node,
+gossip_core_t *gossip_core_create(const gossip_node_view_t *self_node,
                                   gossip_send_callback_t send_callback,
                                   gossip_event_callback_t event_callback,
-                                  void* user_data);
+                                  void *user_data);
 
 /// Destroy a gossip core instance
-void gossip_core_destroy(gossip_core_t* core);
+void gossip_core_destroy(gossip_core_t *core);
 
 /// Drive one gossip cycle
-void gossip_core_tick(gossip_core_t* core);
+void gossip_core_tick(gossip_core_t *core);
 
 /// Drive a complete broadcast gossip cycle
-void gossip_core_tick_full_broadcast(gossip_core_t* core);
+void gossip_core_tick_full_broadcast(gossip_core_t *core);
 
 /// Process a received gossip message
-void gossip_core_handle_message(gossip_core_t* core, 
-                                const gossip_message_t* msg);
+void gossip_core_handle_message(gossip_core_t *core,
+                                const gossip_message_t *msg);
 
 /// Actively initiate join: introduce a new node
-void gossip_core_meet(gossip_core_t* core, const gossip_node_view_t* node);
+void gossip_core_meet(gossip_core_t *core, const gossip_node_view_t *node);
 
 /// Explicitly join the cluster
-void gossip_core_join(gossip_core_t* core, const gossip_node_view_t* node);
+void gossip_core_join(gossip_core_t *core, const gossip_node_view_t *node);
 
 /// Explicitly leave the cluster
-void gossip_core_leave(gossip_core_t* core, const gossip_node_id_t* node_id);
+void gossip_core_leave(gossip_core_t *core, const gossip_node_id_t *node_id);
 
 /// Get self node view
-const gossip_node_view_t* gossip_core_self(const gossip_core_t* core);
+const gossip_node_view_t *gossip_core_self(const gossip_core_t *core);
 
 /// Get all currently known nodes
-gossip_node_view_t* gossip_core_get_nodes(const gossip_core_t* core, 
-                                          size_t* count);
+gossip_node_view_t *gossip_core_get_nodes(const gossip_core_t *core,
+                                          size_t *count);
 
 /// Free node list returned by gossip_core_get_nodes
-void gossip_core_free_nodes(gossip_node_view_t* nodes);
+void gossip_core_free_nodes(gossip_node_view_t *nodes);
 
 /// Find node by ID
-int gossip_core_find_node(const gossip_core_t* core, 
-                          const gossip_node_id_t* id, 
-                          gossip_node_view_t* out_node);
+int gossip_core_find_node(const gossip_core_t *core,
+                          const gossip_node_id_t *id,
+                          gossip_node_view_t *out_node);
 
 /// Get node count
-size_t gossip_core_size(const gossip_core_t* core);
+size_t gossip_core_size(const gossip_core_t *core);
 
 /// Reset core state
-void gossip_core_reset(gossip_core_t* core);
+void gossip_core_reset(gossip_core_t *core);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // GOSSIP_C_H
+#endif// GOSSIP_C_H

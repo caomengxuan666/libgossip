@@ -26,6 +26,10 @@ target_include_directories(libgossip PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
+target_compile_definitions(libgossip PRIVATE
+    LIBGOSSIP_BUILD
+)
+
 # Set target properties
 set_target_properties(libgossip PROPERTIES
     VERSION ${PROJECT_VERSION}

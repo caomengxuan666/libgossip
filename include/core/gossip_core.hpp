@@ -1,6 +1,7 @@
 // include/core/gossip.hpp
 #pragma once
 
+#include "../libgossip_api.h"
 #include <array>
 #include <chrono>
 #include <cstdint>
