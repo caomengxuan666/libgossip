@@ -7,8 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Options
 option(BUILD_EXAMPLES "Build example applications" ON)
 
+set(LIBGOSSIP_CORE_SRC
+    src/core/gossip_core.cpp
+)
+
 # Create the main library
-add_library(libgossip src/core/gossip_core.cpp)
+add_library(libgossip ${LIBGOSSIP_CORE_SRC})
 add_library(libgossip::core ALIAS libgossip)
 
 if(MSVC)

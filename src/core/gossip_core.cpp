@@ -2,8 +2,8 @@
 #include "core/gossip_core.hpp"
 #include <algorithm>
 #include <random>
+#include <stdexcept>
 #include <thread>
-
 
 namespace libgossip {
 
@@ -12,14 +12,22 @@ namespace libgossip {
     // ---------------------------------------------------------
 
     bool node_view::newer_than(const node_view &other) const noexcept {
-        if (heartbeat > other.heartbeat) return true;
-        if (heartbeat < other.heartbeat) return false;
+        if (heartbeat > other.heartbeat) {
+            return true;
+        }
+        if (heartbeat < other.heartbeat) {
+            return false;
+        }
         return config_epoch > other.config_epoch;
     }
 
     bool node_view::can_replace(const node_view &other) const noexcept {
-        if (config_epoch > other.config_epoch) return true;
-        if (config_epoch < other.config_epoch) return false;
+        if (config_epoch > other.config_epoch) {
+            return true;
+        }
+        if (config_epoch < other.config_epoch) {
+            return false;
+        }
         return heartbeat > other.heartbeat;// epoch is the same, higher heartbeat wins
     }
 
@@ -200,7 +208,9 @@ namespace libgossip {
 
 
     void gossip_core::meet(const node_view &node) {
-        if (node.id == self_.id) return;
+        if (node.id == self_.id) {
+            return;
+        }
 
         // Record locally
         auto it = std::find_if(nodes_.begin(), nodes_.end(),
@@ -224,7 +234,9 @@ namespace libgossip {
     }
 
     void gossip_core::join(const node_view &node) {
-        if (node.id == self_.id) return;
+        if (node.id == self_.id) {
+            return;
+        }
 
         // Record locally
         auto it = std::find_if(nodes_.begin(), nodes_.end(),
@@ -302,7 +314,9 @@ namespace libgossip {
                          return exclude ? (n.id != *exclude) : true;
                      });
 
-        if (candidates.empty()) return {};
+        if (candidates.empty()) {
+            return {};
+        }
 
         // High entropy random source
         std::random_device rd;

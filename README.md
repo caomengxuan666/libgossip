@@ -1,5 +1,14 @@
 # libgossip
 
+## Language Index 语言索引
+
+- [English](#english-version)
+- [中文版本](#中文版本)
+
+<!-- English Version -->
+<a id="english-version"></a>
+# libgossip
+
 libgossip is a C++17 implementation of the Gossip protocol, designed for decentralized distributed systems. It provides robust node discovery, failure detection, and metadata propagation with an emphasis on reliability and performance.
 
 ## Features
@@ -233,6 +242,8 @@ Port libgossip to more platforms.
 ### 10. Open Source and Community Building
 Share your achievements with the world.
 
+<!-- 中文版本 -->
+<a id="中文版本"></a>
 # libgossip
 
 libgossip是一个使用C++17实现的Gossip协议库，专为去中心化的分布式系统而设计。它提供了强大的节点发现、故障检测和元数据传播功能，注重可靠性和性能。
