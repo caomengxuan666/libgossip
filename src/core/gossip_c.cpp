@@ -84,7 +84,7 @@ gossip_message_t to_c_message(const libgossip::gossip_message& cpp_msg) {
     
     c_msg.entries_count = cpp_msg.entries.size();
     if (c_msg.entries_count > 0) {
-        c_msg.entries = (gossip_node_view_t*)std::malloc(sizeof(gossip_node_view_t) * c_msg.entries_count);
+        c_msg.entries = static_cast<gossip_node_view_t*>(std::malloc(sizeof(gossip_node_view_t) * c_msg.entries_count));
         for (size_t i = 0; i < c_msg.entries_count; ++i) {
             c_msg.entries[i] = to_c_node_view(cpp_msg.entries[i]);
         }
@@ -155,7 +155,7 @@ gossip_core_t* gossip_core_create(const gossip_node_view_t* self_node,
         };
         
         wrapper->core = std::make_unique<libgossip::gossip_core>(cpp_self, send_fn, event_fn);
-        return reinterpret_cast<gossip_core_t*>(wrapper);
+        return (gossip_core_t*)wrapper;
     } catch (...) {
         return nullptr;
     }
@@ -163,28 +163,28 @@ gossip_core_t* gossip_core_create(const gossip_node_view_t* self_node,
 
 void gossip_core_destroy(gossip_core_t* core) {
     if (core) {
-        gossip_core_wrapper* wrapper = reinterpret_cast<gossip_core_wrapper*>(core);
+        gossip_core_wrapper* wrapper = (gossip_core_wrapper*)core;
         delete wrapper;
     }
 }
 
 void gossip_core_tick(gossip_core_t* core) {
     if (core) {
-        gossip_core_wrapper* wrapper = reinterpret_cast<gossip_core_wrapper*>(core);
+        gossip_core_wrapper* wrapper = (gossip_core_wrapper*)core;
         wrapper->core->tick();
     }
 }
 
 void gossip_core_tick_full_broadcast(gossip_core_t* core) {
     if (core) {
-        gossip_core_wrapper* wrapper = reinterpret_cast<gossip_core_wrapper*>(core);
+        gossip_core_wrapper* wrapper = (gossip_core_wrapper*)core;
         wrapper->core->tick_full_broadcast();
     }
 }
 
 void gossip_core_handle_message(gossip_core_t* core, const gossip_message_t* msg) {
     if (core && msg) {
-        gossip_core_wrapper* wrapper = reinterpret_cast<gossip_core_wrapper*>(core);
+        gossip_core_wrapper* wrapper = (gossip_core_wrapper*)core;
         libgossip::gossip_message cpp_msg = to_cpp_message(msg);
         wrapper->core->handle_message(cpp_msg, libgossip::clock::now());
     }
@@ -192,7 +192,7 @@ void gossip_core_handle_message(gossip_core_t* core, const gossip_message_t* msg
 
 void gossip_core_meet(gossip_core_t* core, const gossip_node_view_t* node) {
     if (core && node) {
-        gossip_core_wrapper* wrapper = reinterpret_cast<gossip_core_wrapper*>(core);
+        gossip_core_wrapper* wrapper = (gossip_core_wrapper*)core;
         libgossip::node_view cpp_node = to_cpp_node_view(node);
         wrapper->core->meet(cpp_node);
     }
@@ -200,7 +200,7 @@ void gossip_core_meet(gossip_core_t* core, const gossip_node_view_t* node) {
 
 void gossip_core_join(gossip_core_t* core, const gossip_node_view_t* node) {
     if (core && node) {
-        gossip_core_wrapper* wrapper = reinterpret_cast<gossip_core_wrapper*>(core);
+        gossip_core_wrapper* wrapper = (gossip_core_wrapper*)core;
         libgossip::node_view cpp_node = to_cpp_node_view(node);
         wrapper->core->join(cpp_node);
     }
@@ -208,7 +208,7 @@ void gossip_core_join(gossip_core_t* core, const gossip_node_view_t* node) {
 
 void gossip_core_leave(gossip_core_t* core, const gossip_node_id_t* node_id) {
     if (core && node_id) {
-        gossip_core_wrapper* wrapper = reinterpret_cast<gossip_core_wrapper*>(core);
+        gossip_core_wrapper* wrapper = (gossip_core_wrapper*)core;
         libgossip::node_id_t cpp_node_id = to_cpp_node_id(node_id);
         wrapper->core->leave(cpp_node_id);
     }
@@ -220,7 +220,7 @@ const gossip_node_view_t* gossip_core_self(const gossip_core_t* core) {
     }
     
     gossip_core_wrapper* wrapper = const_cast<gossip_core_wrapper*>(
-        reinterpret_cast<const gossip_core_wrapper*>(core));
+        (const gossip_core_wrapper*)core);
     
     // We need to be careful here - we're returning a pointer to a temporary
     // In a real implementation, we'd want to manage this more carefully
@@ -235,7 +235,7 @@ gossip_node_view_t* gossip_core_get_nodes(const gossip_core_t* core, size_t* cou
     }
     
     gossip_core_wrapper* wrapper = const_cast<gossip_core_wrapper*>(
-        reinterpret_cast<const gossip_core_wrapper*>(core));
+        (const gossip_core_wrapper*)core);
     
     std::vector<libgossip::node_view> cpp_nodes = wrapper->core->get_nodes();
     *count = cpp_nodes.size();
@@ -273,7 +273,7 @@ int gossip_core_find_node(const gossip_core_t* core,
     }
     
     gossip_core_wrapper* wrapper = const_cast<gossip_core_wrapper*>(
-        reinterpret_cast<const gossip_core_wrapper*>(core));
+        (const gossip_core_wrapper*)core);
     
     libgossip::node_id_t cpp_id = to_cpp_node_id(id);
     std::optional<libgossip::node_view> cpp_node = wrapper->core->find_node(cpp_id);
@@ -292,14 +292,14 @@ size_t gossip_core_size(const gossip_core_t* core) {
     }
     
     gossip_core_wrapper* wrapper = const_cast<gossip_core_wrapper*>(
-        reinterpret_cast<const gossip_core_wrapper*>(core));
+        (const gossip_core_wrapper*)core);
     
     return wrapper->core->size();
 }
 
 void gossip_core_reset(gossip_core_t* core) {
     if (core) {
-        gossip_core_wrapper* wrapper = reinterpret_cast<gossip_core_wrapper*>(core);
+        gossip_core_wrapper* wrapper = (gossip_core_wrapper*)core;
         wrapper->core->reset();
     }
 }
