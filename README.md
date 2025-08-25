@@ -18,6 +18,7 @@ libgossip is a C++17 implementation of the Gossip protocol, designed for decentr
 - **Metadata Propagation**: Distributes node metadata across the cluster using anti-entropy gossip
 - **Event System**: Notifies applications of node status changes and metadata updates
 - **Header-only Library**: Easy integration with minimal dependencies
+- **C API**: Provides C bindings for non-C++ applications
 
 ## Installation and Integration
 
@@ -29,7 +30,7 @@ libgossip is a C++17 implementation of the Gossip protocol, designed for decentr
 ### Building from Source
 
 ```bash
-git clone https://github.com/yourusername/libgossip.git
+git clone https://github.com/caomengxuan666/libgossip.git
 cd libgossip
 mkdir build
 cd build
@@ -74,6 +75,7 @@ See the [examples](examples/) directory for detailed usage examples:
 - [Simple Cluster](examples/simple_cluster.cpp) - Basic full-mesh cluster setup
 - [Seed-based Cluster](examples/seed_cluster.cpp) - Real-world deployment using seed nodes
 - [Advanced Cluster](examples/advanced_cluster.cpp) - Advanced features including metadata and graceful leave
+- [Simple Cluster (C API)](examples/simple_cluster_c.c) - Using the C API bindings
 
 Each example demonstrates different aspects of the library usage patterns.
 
@@ -84,6 +86,16 @@ Each example demonstrates different aspects of the library usage patterns.
 - [gossip_core](include/core/gossip_core.hpp) - Main protocol implementation
 - [node_view](include/core/gossip_core.hpp) - Node representation with metadata
 - [gossip_message](include/core/gossip_core.hpp) - Message structure for network transport
+
+### C API Functions
+
+- `gossip_core_create()` - Create a new gossip core instance
+- `gossip_core_destroy()` - Destroy a gossip core instance
+- `gossip_core_tick()` - Drive the protocol (should be called periodically)
+- `gossip_core_handle_message()` - Process incoming messages
+- `gossip_core_meet()` - Introduce a new node to the cluster
+- `gossip_core_join()` - Join an existing node
+- `gossip_core_leave()` - Gracefully leave the cluster
 
 ### Key Methods
 
@@ -100,6 +112,7 @@ Detailed examples are provided in the [examples](examples/) directory:
 1. **simple_cluster.cpp** - Shows basic cluster formation with full mesh connectivity
 2. **seed_cluster.cpp** - Demonstrates realistic deployment using seed nodes
 3. **advanced_cluster.cpp** - Illustrates advanced features like metadata and graceful leave
+4. **simple_cluster_c.c** - Shows how to use the C API bindings
 
 To build and run examples:
 
@@ -110,6 +123,7 @@ cmake --build .
 ./examples/simple_cluster
 ./examples/seed_cluster
 ./examples/advanced_cluster
+./examples/simple_cluster_c
 ```
 
 ## Roadmap: From Core Library to Production System
@@ -255,6 +269,7 @@ libgossip是一个使用C++17实现的Gossip协议库，专为去中心化的分
 - **元数据传播**：使用反熵gossip在集群中分发节点元数据
 - **事件系统**：在节点状态变化和元数据更新时通知应用程序
 - **仅头文件库**：易于集成，依赖项少
+- **C API**：为非C++应用程序提供C语言绑定
 
 ## 安装和集成
 
@@ -265,8 +280,8 @@ libgossip是一个使用C++17实现的Gossip协议库，专为去中心化的分
 
 ### 从源码构建
 
-```bash
-git clone https://github.com/yourusername/libgossip.git
+```
+git clone https://github.com/caomengxuan666/libgossip.git
 cd libgossip
 mkdir build
 cd build
@@ -280,14 +295,14 @@ cmake --build .
 
 1. 使用find_package（安装后）：
 
-```cmake
+```
 find_package(libgossip REQUIRED)
 target_link_libraries(your_target libgossip::core)
 ```
 
 2. 使用add_subdirectory（无需安装）：
 
-```cmake
+```
 add_subdirectory(path/to/libgossip)
 target_link_libraries(your_target libgossip::core)
 ```
@@ -296,7 +311,7 @@ target_link_libraries(your_target libgossip::core)
 
 要将libgossip安装到系统中：
 
-```bash
+```
 mkdir build
 cd build
 cmake ..
@@ -311,6 +326,7 @@ sudo cmake --install .
 - [Simple Cluster](examples/simple_cluster.cpp) - 基础全网格集群设置
 - [Seed-based Cluster](examples/seed_cluster.cpp) - 使用种子节点的真实部署
 - [Advanced Cluster](examples/advanced_cluster.cpp) - 高级功能包括元数据和优雅离开
+- [Simple Cluster (C API)](examples/simple_cluster_c.c) - 使用C API绑定
 
 每个示例都演示了库使用的不同方面。
 
@@ -321,6 +337,16 @@ sudo cmake --install .
 - [gossip_core](include/core/gossip_core.hpp) - 主协议实现
 - [node_view](include/core/gossip_core.hpp) - 带元数据的节点表示
 - [gossip_message](include/core/gossip_core.hpp) - 用于网络传输的消息结构
+
+### C API函数
+
+- `gossip_core_create()` - 创建一个新的gossip核心实例
+- `gossip_core_destroy()` - 销毁gossip核心实例
+- `gossip_core_tick()` - 驱动协议（应定期调用）
+- `gossip_core_handle_message()` - 处理传入消息
+- `gossip_core_meet()` - 将新节点引入集群
+- `gossip_core_join()` - 加入现有节点
+- `gossip_core_leave()` - 优雅地离开集群
 
 ### 关键方法
 
@@ -337,16 +363,18 @@ sudo cmake --install .
 1. **simple_cluster.cpp** - 展示具有全网格连接的基本集群形成
 2. **seed_cluster.cpp** - 演示使用种子节点的真实部署
 3. **advanced_cluster.cpp** - 展示高级功能如元数据和优雅离开
+4. **simple_cluster_c.c** - 展示如何使用C API绑定
 
 构建和运行示例：
 
-```bash
+```
 cd build
 cmake ..
 cmake --build .
 ./examples/simple_cluster
 ./examples/seed_cluster
 ./examples/advanced_cluster
+./examples/simple_cluster_c
 ```
 
 ## 发展路线图：从核心库到生产系统
@@ -366,7 +394,7 @@ libgossip-core已经是分布式系统的坚实基础。以下是未来的发展
 - 实现连接管理
 
 ✅ **示例：**
-```cpp
+```
 auto transport = std::make_shared<UdpTransport>("127.0.0.1", 8000);
 transport->set_gossip_core(gossip_core);
 transport->start();
@@ -381,7 +409,7 @@ transport->start();
 - 自定义二进制格式：极致紧凑，适合嵌入式
 
 ✅ **示例：**
-```cpp
+```
 auto buffer = serializer::pack(message);
 send(buffer.data(), buffer.size());
 
@@ -408,7 +436,7 @@ gossip_core.handle_message(*msg, now);
 将libgossip用作服务注册与发现。
 
 ✅ **扩展node_view：**
-```cpp
+```
 struct service_info {
     std::string name;
     std::string version;
@@ -418,7 +446,7 @@ struct service_info {
 ```
 
 ✅ **用法：**
-```cpp
+```
 // 服务注册
 gossip_core.register_service("user-service", "v1.0", "region", "us-east-1");
 
