@@ -8,3 +8,5 @@ cmake-build-release/
 .cache/
 .build-*/
 checks.json
+vcpkg.json
+portfile.cmake

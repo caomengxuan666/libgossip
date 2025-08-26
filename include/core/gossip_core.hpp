@@ -1,7 +1,7 @@
 // include/core/gossip.hpp
 #pragma once
 
-#include "../libgossip_api.h"
+#include "libgossip_api.h"
 #include <array>
 #include <chrono>
 #include <cstdint>
@@ -129,7 +129,7 @@ namespace libgossip {
     // Thread safety must be guaranteed by upper layer (single-threaded driver model)
     // ---------------------------------------------------------
 
-    class gossip_core {
+    class LIBGOSSIP_API gossip_core {
     public:
         /// Constructor
         explicit gossip_core(node_view self,
