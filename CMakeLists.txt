@@ -10,6 +10,7 @@ option(BUILD_EXAMPLES "Build example applications" ON)
 set(LIBGOSSIP_CORE_SRC
     src/core/gossip_core.cpp
     src/core/gossip_c.cpp
+    include/libgossip_api.h
 )
 
 # Create the main library
@@ -26,10 +27,7 @@ target_include_directories(libgossip PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-target_compile_definitions(libgossip PRIVATE
-    LIBGOSSIP_BUILD
-)
-
+target_compile_definitions(libgossip PUBLIC LIBGOSSIP_BUILD)
 # Set target properties
 set_target_properties(libgossip PROPERTIES
     VERSION ${PROJECT_VERSION}
