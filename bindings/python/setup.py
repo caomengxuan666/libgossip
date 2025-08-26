@@ -23,7 +23,11 @@ if not compiled_module_exists:
     ext_modules = [
         Pybind11Extension(
             "libgossip.libgossip_py",
-            ["gossip_py.cpp"],
+            [  # Sources
+                "gossip_py.cpp",
+                "../../src/core/gossip_core.cpp",
+                "../../src/core/gossip_c.cpp"
+            ],
             include_dirs=[
                 "../include",
                 "../../include",
@@ -31,11 +35,7 @@ if not compiled_module_exists:
             ],
             cxx_std=17,
             define_macros=[("LIBGOSSIP_BUILD", None)],
-            # Include the source files directly when building with setuptools
-            extra_objects=[
-                "../../src/core/gossip_core.cpp",
-                "../../src/core/gossip_c.cpp"
-            ]
+            extra_compile_args=["-I../../include", "-I../include"]
         ),
     ]
 
