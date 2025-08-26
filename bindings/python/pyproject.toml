@@ -28,6 +28,9 @@ dependencies = [
     "pybind11>=2.6.0",
 ]
 
+[project.optional-dependencies]
+test = ["pytest"]
+
 [project.urls]
 Homepage = "https://github.com/caomengxuan666/libgossip"
 Repository = "https://github.com/caomengxuan666/libgossip"
@@ -37,4 +40,4 @@ where = ["."]
 include = ["libgossip*"]
 
 [tool.setuptools.package-data]
-libgossip = ["libgossip_py.*"]
+libgossip = ["*.so"]
