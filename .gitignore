@@ -1,6 +1,7 @@
 build/
 .vscode/
 out/
+.cache/
 cmake-build-debug/
 cmake-build-release/
 .idea/
@@ -10,3 +11,7 @@ cmake-build-release/
 checks.json
 vcpkg.json
 portfile.cmake
+*.pyc
+*.pyd
+__pycache__/
+bindings/python/libgossip.egg-info/

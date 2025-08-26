@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Options
 option(BUILD_EXAMPLES "Build example applications" ON)
+option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
 
 set(LIBGOSSIP_CORE_SRC
     src/core/gossip_core.cpp
@@ -94,6 +95,12 @@ if(BUILD_EXAMPLES)
         PATTERN "*.cpp"
         PATTERN "CMakeLists.txt" EXCLUDE
     )
+endif()
+
+# Python bindings
+if(BUILD_PYTHON_BINDINGS)
+    add_subdirectory(third_party/pybind11)
+    add_subdirectory(bindings/python)
 endif()
 
 # CPack packaging

@@ -19,6 +19,7 @@ libgossip is a C++17 implementation of the Gossip protocol, designed for decentr
 - **Event System**: Notifies applications of node status changes and metadata updates
 - **Header-only Library**: Easy integration with minimal dependencies
 - **C API**: Provides C bindings for non-C++ applications
+- **Python Bindings**: Provides Python bindings for easy integration with Python applications
 
 ## Installation and Integration
 
@@ -32,9 +33,10 @@ libgossip is a C++17 implementation of the Gossip protocol, designed for decentr
 ```bash
 git clone https://github.com/caomengxuan666/libgossip.git
 cd libgossip
+git submodule update --init  # Initialize pybind11 submodule
 mkdir build
 cd build
-cmake ..
+cmake .. -DBUILD_PYTHON_BINDINGS=ON
 cmake --build .
 ```
 
@@ -72,6 +74,12 @@ sudo cmake --install .
 
 See the [examples](examples/) directory for detailed usage examples:
 
+Python examples are available in the [bindings/python](bindings/python/) directory:
+
+- [example.py](bindings/python/example.py) - Basic single node example
+- [two_node_example.py](bindings/python/two_node_example.py) - Two-node interaction example
+- [debug_example.py](bindings/python/debug_example.py) - Debug information example
+
 - [Simple Cluster](examples/simple_cluster.cpp) - Basic full-mesh cluster setup
 - [Seed-based Cluster](examples/seed_cluster.cpp) - Real-world deployment using seed nodes
 - [Advanced Cluster](examples/advanced_cluster.cpp) - Advanced features including metadata and graceful leave
@@ -86,6 +94,15 @@ Each example demonstrates different aspects of the library usage patterns.
 - [gossip_core](include/core/gossip_core.hpp) - Main protocol implementation
 - [node_view](include/core/gossip_core.hpp) - Node representation with metadata
 - [gossip_message](include/core/gossip_core.hpp) - Message structure for network transport
+
+### Python API Classes
+
+- `gossip.GossipCore` - Main protocol implementation
+- `gossip.NodeView` - Node representation with metadata
+- `gossip.GossipMessage` - Message structure for network transport
+- `gossip.NodeId` - Node unique identifier
+- `gossip.NodeStatus` - Node status enumeration
+- `gossip.MessageType` - Message type enumeration
 
 ### C API Functions
 
@@ -118,6 +135,19 @@ To build and run examples:
 
 ```bash
 cd build
+cmake .. -DBUILD_PYTHON_BINDINGS=ON
+cmake --build .
+./examples/simple_cluster
+./examples/seed_cluster
+./examples/advanced_cluster
+./examples/simple_cluster_c
+python ../bindings/python/example.py
+python ../bindings/python/two_node_example.py
+python ../bindings/python/debug_example.py
+```
+
+```bash
+cd build
 cmake ..
 cmake --build .
 ./examples/simple_cluster
@@ -143,7 +173,7 @@ The core layer is network-agnostic, now we need concrete transport implementatio
 - Implement connection management
 
 ✅ **Example:**
-```cpp
+```
 auto transport = std::make_shared<UdpTransport>("127.0.0.1", 8000);
 transport->set_gossip_core(gossip_core);
 transport->start();
@@ -255,6 +285,62 @@ Port libgossip to more platforms.
 
 ### 10. Open Source and Community Building
 Share your achievements with the world.
+
+## Python Bindings
+
+libgossip also provides Python bindings for easy integration with Python applications.
+
+### Building Python Bindings
+
+To build the Python bindings, you need to have pybind11 installed:
+
+```bash
+# Clone the pybind11 repository as a submodule
+git submodule update --init
+
+# Build with Python bindings enabled (default)
+mkdir build
+cd build
+cmake .. -DBUILD_PYTHON_BINDINGS=ON
+cmake --build .
+```
+
+### Using Python Bindings
+
+```python
+import gossip
+
+# Create a node view for ourself
+self_node = gossip.NodeView()
+self_node.ip = "127.0.0.1"
+self_node.port = 7000
+self_node.status = gossip.NodeStatus.ONLINE
+
+# Define callbacks
+def send_callback(msg, target):
+    print(f"Sending message of type {msg.type} to {target.ip}:{target.port}")
+
+def event_callback(node, old_status):
+    print(f"Node {node.ip}:{node.port} changed from {old_status} to {node.status}")
+
+# Initialize gossip core
+core = gossip.GossipCore(self_node, send_callback, event_callback)
+
+# Meet another node
+other_node = gossip.NodeView()
+other_node.ip = "127.0.0.1"
+other_node.port = 7001
+other_node.status = gossip.NodeStatus.JOINING
+
+core.meet(other_node)
+
+# Run gossip protocol
+for i in range(5):
+    core.tick()
+    time.sleep(0.1)
+```
+
+See [bindings/python/example.py](bindings/python/example.py) for a complete example.
 
 <!-- 中文版本 -->
 <a id="中文版本"></a>
@@ -506,3 +592,21 @@ auto services = gossip_core.get_services("user-service");
 
 ### 10. 开源与社区建设
 将我们的成果分享给世界。
+
+## Python 绑定
+
+`libgossip` 还提供了 Python 绑定，便于与 Python 应用程序轻松集成。
+
+### 构建 Python 绑定
+
+要构建 Python 绑定，你需要先安装 `pybind11`：
+
+```bash
+# 将 pybind11 仓库作为子模块克隆
+git submodule update --init
+
+# 启用 Python 绑定进行构建（默认开启）
+mkdir build
+cd build
+cmake .. -DBUILD_PYTHON_BINDINGS=ON
+cmake --build .

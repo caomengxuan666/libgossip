@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "pybind11>=2.6.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "libgossip"
+version = "0.1.0"
+description = "Python bindings for libgossip - a C++ Gossip protocol implementation"
+readme = "README.md"
+authors = [{name = "caomengxuan666", email = "caomengxuan666@gmail.com"}]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "pybind11>=2.6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/caomengxuan666/libgossip"
+Repository = "https://github.com/caomengxuan666/libgossip"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["libgossip*"]
+
+[tool.setuptools.package-data]
+libgossip = ["libgossip_py.*"]
