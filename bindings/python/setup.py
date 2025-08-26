@@ -26,6 +26,7 @@ if not compiled_module_exists:
             ["gossip_py.cpp"],
             include_dirs=[
                 "../include",
+                "../../include",
                 pybind11.get_cmake_dir(),
             ],
             cxx_std=17,

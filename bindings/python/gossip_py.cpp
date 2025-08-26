@@ -17,8 +17,8 @@
 #include <random>
 #else
 // When building with setup.py, use relative paths
-#include "../include/core/gossip_c.h"
-#include "../include/core/gossip_core.hpp"
+#include "../../include/core/gossip_c.h"
+#include "../../include/core/gossip_core.hpp"
 #endif
 
 namespace py = pybind11;
