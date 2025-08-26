@@ -31,6 +31,11 @@ if not compiled_module_exists:
             ],
             cxx_std=17,
             define_macros=[("LIBGOSSIP_BUILD", None)],
+            # Include the source files directly when building with setuptools
+            extra_objects=[
+                "../../src/core/gossip_core.cpp",
+                "../../src/core/gossip_c.cpp"
+            ]
         ),
     ]
 
