@@ -21,9 +21,26 @@ set(LIBGOSSIP_CORE_SRC
 add_library(libgossip ${LIBGOSSIP_CORE_SRC})
 add_library(libgossip::core ALIAS libgossip)
 
+# Network library
+set(LIBGOSSIP_NET_SRC
+    src/net/udp_transport.cpp
+)
+
+add_library(libgossip_net ${LIBGOSSIP_NET_SRC})
+add_library(libgossip::network ALIAS libgossip_net)
+
+# Find and link ASIO
+# ASIO is header-only, so we just need to add the include directory
+target_include_directories(libgossip_net PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/asio/asio/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(libgossip_net PUBLIC libgossip)
+
 if(MSVC)
 target_compile_options(libgossip PRIVATE /utf-8)
-
+target_compile_options(libgossip_net PRIVATE /utf-8)
 endif()
 
 # Set include directories for the library
@@ -39,12 +56,17 @@ set_target_properties(libgossip PROPERTIES
     SOVERSION 1
 )
 
+set_target_properties(libgossip_net PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
+)
+
 # Create export header
 include(GenerateExportHeader)
 generate_export_header(libgossip)
 
 # Export targets for build directory
-export(TARGETS libgossip
+export(TARGETS libgossip libgossip_net
     NAMESPACE libgossip::
     FILE libgossipTargets.cmake
 )

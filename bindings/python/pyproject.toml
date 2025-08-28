@@ -32,9 +32,6 @@ dependencies = [
 Homepage = "https://github.com/caomengxuan666/libgossip"
 Repository = "https://github.com/caomengxuan666/libgossip"
 
-[tool.setuptools]
-py-modules = []
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["libgossip*"]
