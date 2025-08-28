@@ -27,7 +27,9 @@ requires-python = ">=3.7"
 dependencies = [
     "pybind11>=2.6.0",
 ]
-dynamic = ["optional-dependencies"]
+
+[project.optional-dependencies]
+test = ["pytest"]
 
 [project.urls]
 Homepage = "https://github.com/caomengxuan666/libgossip"
