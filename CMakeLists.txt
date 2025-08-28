@@ -4,6 +4,9 @@ project(libgossip VERSION 1.0.0 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Enable position independent code for shared libraries
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Options
 option(BUILD_EXAMPLES "Build example applications" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
@@ -20,6 +23,7 @@ add_library(libgossip::core ALIAS libgossip)
 
 if(MSVC)
 target_compile_options(libgossip PRIVATE /utf-8)
+
 endif()
 
 # Set include directories for the library
