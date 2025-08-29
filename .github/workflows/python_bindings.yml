@@ -80,14 +80,25 @@ jobs:
           path: dist
           merge-multiple: true
 
+      - name: Install twine with latest pkginfo
+        run: |
+          pip install --upgrade twine pkginfo
+
+      - name: Verify package metadata
+        run: |
+          twine check dist/*
+
       - name: Publish to Test PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.12
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          packages-dir: dist/
+        run: |
+          twine upload --repository testpypi dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
 
       - name: Publish to PyPI
         if: github.event_name == 'release' && github.event.action == 'published'
-        uses: pypa/gh-action-pypi-publish@v1.8.12
-        with:
-          packages-dir: dist/
+        run: |
+          twine upload --repository pypi dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
