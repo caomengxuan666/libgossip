@@ -1,3 +1,37 @@
+//​
+//  _ _ _                         _       
+// | (_) |__   __ _  ___  ___ ___(_)_ __  
+// | | | '_ \ / _` |/ _ \/ __/ __| | '_ \_
+// | | | |_) | (_| | (_) \__ \__ \ | |_) |
+// |_|_|_.__/ \__, |\___/|___/___/_| .__/ 
+//            |___/                |_|    
+// Project: libgossip
+// Repository: https://github.com/caomengxuan666/libgossip
+// Version: 1.1.2
+//
+// Licensed under the MIT License <http://opensource.org/licenses/MIT>.
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Caomengxuan.
+//
+// Permission is hereby  granted, free of charge, to any  person obtaining a copy
+// of this software and associated  documentation files (the "Software"), to deal
+// in the Software  without restriction, including without  limitation the rights
+// to  use, copy,  modify, merge,  publish, distribute,  sublicense, and/or  sell
+// copies  of  the Software,  and  to  permit persons  to  whom  the Software  is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE  IS PROVIDED "AS  IS", WITHOUT WARRANTY  OF ANY KIND,  EXPRESS OR
+// IMPLIED,  INCLUDING BUT  NOT  LIMITED TO  THE  WARRANTIES OF  MERCHANTABILITY,
+// FITNESS FOR  A PARTICULAR PURPOSE AND  NONINFRINGEMENT. IN NO EVENT  SHALL THE
+// AUTHORS  OR COPYRIGHT  HOLDERS  BE  LIABLE FOR  ANY  CLAIM,  DAMAGES OR  OTHER
+// LIABILITY, WHETHER IN AN ACTION OF  CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//​END
+
 /**
  * @file gossip_core.hpp
  * @brief Core implementation of the gossip protocol
@@ -13,6 +47,7 @@
 #define LIBGOSSIP_CORE_HPP
 
 #include "libgossip_api.h"
+#include "magic_enum/magic_enum.hpp"
 #include <array>
 #include <chrono>
 #include <cstdint>
@@ -49,6 +84,10 @@ namespace libgossip {
         suspect,// Suspected offline (timeout)
         failed  // Confirmed offline
     };
+    template<typename E>
+    auto to_string(E value) -> std::enable_if_t<std::is_enum_v<E>, std::string> {
+        return std::string{magic_enum::enum_name(value)};
+    }
 
     // ---------------------------------------------------------
     // Node view: summary information of each node in the cluster
@@ -113,6 +152,7 @@ namespace libgossip {
         leave,// Explicit leave
         update
     };
+
 
     // ---------------------------------------------------------
     // Gossip message: used for information exchange between nodes
@@ -269,4 +309,7 @@ namespace libgossip {
     };
 
 }// namespace libgossip
+
+#include "enum_reflection.inl"
+
 #endif

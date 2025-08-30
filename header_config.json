@@ -1,0 +1,27 @@
+{
+    "project_info": {
+        "name": "libgossip",
+        "repo_owner": "caomengxuan666",
+
+        "year": "2025",
+        "copyright_holder": "Caomengxuan"
+    },
+    "ascii_art": [
+        " _ _ _                         _       ",
+        "| (_) |__   __ _  ___  ___ ___(_)_ __  ",
+        "| | | '_ \\ / _` |/ _ \\/ __/ __| | '_ \\_",
+        "| | | |_) | (_| | (_) \\__ \\__ \\ | |_) |",
+        "|_|_|_.__/ \\__, |\\___/|___/___/_| .__/ ",
+        "           |___/                |_|    "
+    ],
+    "files_to_process": [
+        "include/core/gossip_core.h",
+        "include/core/gossip_core.hpp",
+        "include/net/gossip_net.h",
+        "include/net/json_serializer.hpp",
+        "include/net/tcp_transport.hpp",
+        "include/net/udp_transport.hpp",
+        "include/net/transport_factory.hpp",
+        "include/libgossip_api.h"
+    ]
+}

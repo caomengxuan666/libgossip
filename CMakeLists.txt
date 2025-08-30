@@ -22,6 +22,8 @@ option(ENABLE_COVERAGE "Enable code coverage reporting" ON)
 # Load dependency management functions
 include(FindDependencies)
 
+include_directories(third_party)
+
 set(LIBGOSSIP_CORE_SRC src/core/gossip_core.cpp src/core/gossip_c.cpp
                        include/libgossip_api.h)
 
@@ -33,9 +35,10 @@ add_library(libgossip::core ALIAS libgossip)
 setup_bundled_asio()
 
 # Network library
-set(LIBGOSSIP_NET_SRC src/net/udp_transport.cpp src/net/tcp_transport.cpp
-                      src/net/transport_factory.cpp src/net/gossip_net_c.cpp
-                      src/net/json_serializer.cpp)
+set(LIBGOSSIP_NET_SRC
+    src/net/udp_transport.cpp src/net/tcp_transport.cpp
+    src/net/transport_factory.cpp src/net/gossip_net_c.cpp
+    src/net/json_serializer.cpp)
 
 add_library(libgossip_net ${LIBGOSSIP_NET_SRC})
 add_library(libgossip::network ALIAS libgossip_net)

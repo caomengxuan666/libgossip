@@ -1,7 +1,7 @@
 # Examples CMakeLists.txt
 
 # Try to find libgossip package
-find_package(libgossip QUIET)
+#find_package(libgossip QUIET)
 
 if(NOT libgossip_FOUND)
   # If not found, use the local build
@@ -36,6 +36,15 @@ target_link_libraries(transport_factory_example libgossip libgossip_net)
 
 add_executable(serializer_example serializer_example.cpp)
 target_link_libraries(serializer_example libgossip libgossip_net)
+
+add_executable(large_scale_cluster_example large_scale_cluster_example.cpp)
+target_link_libraries(large_scale_cluster_example libgossip libgossip_net)
+
+add_executable(simple_cluster_stats simple_cluster_stats.cpp)
+target_link_libraries(simple_cluster_stats libgossip libgossip_net)
+
+add_executable(redis_cluster_gossip_example redis_cluster_gossip_example.cpp)
+target_link_libraries(redis_cluster_gossip_example libgossip libgossip_net)
 
 # ==========================C Bindings===================================== #
 
