@@ -38,11 +38,16 @@ jobs:
           pip install build twine pybind11>=3.0.0
 
       - name: Debug information
+        shell: bash
         run: |
           echo "Python version:"
           python --version
           echo "Directory structure:"
-          ls -la
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cmd //c "dir"
+          else
+            ls -la
+          fi
           echo "Submodules status:"
           git submodule status
           echo "Pybind11 version:"
