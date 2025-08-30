@@ -6,6 +6,7 @@
 #include "../../src/net/tcp_transport.cpp"
 #include "../../src/net/transport_factory.cpp"
 #include "../../src/net/udp_transport.cpp"
+#include "../../src/net/json_serializer.cpp"
 #endif
 
 #include <iomanip>
