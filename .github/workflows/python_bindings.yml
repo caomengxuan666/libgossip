@@ -17,6 +17,7 @@ jobs:
     env:
       CIBW_BUILD_FRONTEND: build
       CIBW_SKIP: "*-win32 *-manylinux_i686 pp*"
+      CIBW_BUILD_VERBOSITY: 1
 
     steps:
       - uses: actions/checkout@v4
@@ -34,12 +35,27 @@ jobs:
       - name: Install Python build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine
+          pip install build twine pybind11>=3.0.0
+
+      - name: Debug information
+        run: |
+          echo "Python version:"
+          python --version
+          echo "Directory structure:"
+          ls -la
+          echo "Submodules status:"
+          git submodule status
+          echo "Pybind11 version:"
+          python -c "import pybind11; print(pybind11.__version__)"
 
       - name: Build wheels with cibuildwheel
         uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: bindings/python
+        env:
+          CIBW_ENVIRONMENT: >
+            ASIO_STANDALONE=1
+            ASIO_NO_TYPEID=1
 
       - name: Check wheel metadata
         run: |
@@ -75,7 +91,18 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine
+          pip install build twine pybind11>=3.0.0
+
+      - name: Debug information
+        run: |
+          echo "Python version:"
+          python --version
+          echo "Directory structure:"
+          ls -la
+          echo "Submodules status:"
+          git submodule status
+          echo "Pybind11 version:"
+          python -c "import pybind11; print(pybind11.__version__)"
 
       - name: Build sdist
         run: |
