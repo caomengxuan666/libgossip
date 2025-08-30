@@ -1,5 +1,13 @@
 # libgossip
 
+## Language Index
+
+- [English](#english)
+- [中文版本](README_ZH.md)
+
+<a id="english"></a>
+# libgossip
+
 libgossip is a C++17 implementation of the Gossip protocol, designed for decentralized distributed systems. It provides robust node discovery, failure detection, and metadata propagation with an emphasis on reliability and performance.
 
 ## Features
