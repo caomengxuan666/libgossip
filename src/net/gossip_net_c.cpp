@@ -218,19 +218,20 @@ gossip_error_code_t gossip_transport_send_message(gossip_transport_t *transport,
 }
 
 void gossip_transport_set_core(gossip_transport_t *transport,
-                              gossip_core_t *core) {
-    if (!transport) return;
+                               gossip_core_t *core) {
+    if (!transport) {
+        return;
+    }
 
     try {
         auto wrapper = reinterpret_cast<gossip_transport_wrapper *>(transport);
         // Get the internal C++ gossip core instance from the C wrapper
-        void* core_ptr = gossip_core_get_internal(core);
+        void *core_ptr = gossip_core_get_internal(core);
         if (core_ptr) {
             // Cast to shared_ptr as expected by the transport
             std::shared_ptr<libgossip::gossip_core> shared_core(
-                static_cast<libgossip::gossip_core*>(core_ptr),
-                [](libgossip::gossip_core*) {/* Do not delete, owned by C wrapper */}
-            );
+                    static_cast<libgossip::gossip_core *>(core_ptr),
+                    [](libgossip::gossip_core *) { /* Do not delete, owned by C wrapper */ });
             wrapper->transport_ptr->set_gossip_core(shared_core);
         }
     } catch (...) {
@@ -240,7 +241,9 @@ void gossip_transport_set_core(gossip_transport_t *transport,
 
 void gossip_transport_set_serializer(gossip_transport_t *transport,
                                      gossip_serializer_t *serializer) {
-    if (!transport) return;
+    if (!transport) {
+        return;
+    }
 
     try {
         auto transport_wrapper = reinterpret_cast<gossip_transport_wrapper *>(transport);

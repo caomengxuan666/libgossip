@@ -11,7 +11,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#define SLEEP(seconds) Sleep((seconds) * 1000)
+#else
 #include <unistd.h>
+#define SLEEP(seconds) sleep(seconds)
+#endif
 
 // Global transport pointer so we can use it in callbacks
 gossip_transport_t *global_transport = NULL;
@@ -147,7 +154,7 @@ int main() {
     for (int i = 0; i < 3; i++) {
         printf("Gossip cycle %d\n", i+1);
         gossip_core_tick(core);
-        sleep(1); // Sleep for a second between cycles
+        SLEEP(1); // Sleep for a second between cycles
     }
     
     // Demonstrate core functions
