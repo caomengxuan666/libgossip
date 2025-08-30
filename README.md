@@ -1,4 +1,4 @@
-# libgossip
+d# libgossip
 
 ## Language Index
 
@@ -38,6 +38,28 @@ cd build
 cmake .. -DBUILD_PYTHON_BINDINGS=ON
 cmake --build .
 ```
+
+### CMake Presets
+
+This project includes CMake presets for easier configuration and building:
+
+- `CMakePresets.json` - Version-controlled presets suitable for all developers
+- `CMakeUserPresets.json` - User-specific presets with local environment configurations (ignored in version control)
+
+To use a preset, you can configure with:
+```bash
+cmake --preset=gcc-debug
+```
+
+And build with:
+```bash
+cmake --build --preset=gcc-debug
+```
+
+Available presets include:
+- `gcc-debug`/`gcc-release` - GCC compiler with Debug/Release build types
+- `clang-debug`/`clang-release` - Clang compiler with Debug/Release build types
+- `msvc-debug`/`msvc-release` - MSVC compiler with Debug/Release build types (Windows only)
 
 ### Integration with CMake
 

@@ -39,6 +39,28 @@ cmake .. -DBUILD_PYTHON_BINDINGS=ON
 cmake --build .
 ```
 
+### CMake 预设
+
+本项目包含 CMake 预设以简化配置和构建：
+
+- `CMakePresets.json` - 适用于所有开发者的版本控制预设
+- `CMakeUserPresets.json` - 包含本地环境配置的用户特定预设（在版本控制中被忽略）
+
+要使用预设，您可以这样配置：
+```bash
+cmake --preset=gcc-debug
+```
+
+并这样构建：
+```bash
+cmake --build --preset=gcc-debug
+```
+
+可用的预设包括：
+- `gcc-debug`/`gcc-release` - 使用 GCC 编译器的调试/发布构建类型
+- `clang-debug`/`clang-release` - 使用 Clang 编译器的调试/发布构建类型
+- `msvc-debug`/`msvc-release` - 使用 MSVC 编译器的调试/发布构建类型（仅限 Windows）
+
 ### 与 CMake 集成
 
 您可以通过两种方式将 libgossip 集成到您的项目中：

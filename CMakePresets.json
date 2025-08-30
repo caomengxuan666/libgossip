@@ -1,0 +1,149 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Config",
+      "description": "Default build configuration using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_PARALLEL_LEVEL": "$env{CMAKE_BUILD_PARALLEL_LEVEL}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE"
+      }
+    },
+    {
+      "name": "gcc-debug",
+      "displayName": "GCC Debug",
+      "description": "Debug build using GCC compiler",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/gcc-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_PARALLEL_LEVEL": "$env{CMAKE_BUILD_PARALLEL_LEVEL}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE"
+      }
+    },
+    {
+      "name": "gcc-release",
+      "displayName": "GCC Release",
+      "description": "Release build using GCC compiler",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/gcc-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_PARALLEL_LEVEL": "$env{CMAKE_BUILD_PARALLEL_LEVEL}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE"
+      }
+    },
+    {
+      "name": "clang-debug",
+      "displayName": "Clang Debug",
+      "description": "Debug build using Clang compiler",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/clang-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_PARALLEL_LEVEL": "$env{CMAKE_BUILD_PARALLEL_LEVEL}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE"
+      }
+    },
+    {
+      "name": "clang-release",
+      "displayName": "Clang Release",
+      "description": "Release build using Clang compiler",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/clang-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_PARALLEL_LEVEL": "$env{CMAKE_BUILD_PARALLEL_LEVEL}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE"
+      }
+    },
+    {
+      "name": "msvc-debug",
+      "displayName": "MSVC Debug",
+      "description": "Debug build using MSVC compiler",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/msvc-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "msvc-release",
+      "displayName": "MSVC Release",
+      "description": "Release build using MSVC compiler",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/msvc-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "displayName": "Build Default",
+      "description": "Build with default configuration"
+    },
+    {
+      "name": "gcc-debug",
+      "configurePreset": "gcc-debug",
+      "displayName": "Build GCC Debug",
+      "description": "Build with GCC Debug configuration"
+    },
+    {
+      "name": "gcc-release",
+      "configurePreset": "gcc-release",
+      "displayName": "Build GCC Release",
+      "description": "Build with GCC Release configuration"
+    },
+    {
+      "name": "clang-debug",
+      "configurePreset": "clang-debug",
+      "displayName": "Build Clang Debug",
+      "description": "Build with Clang Debug configuration"
+    },
+    {
+      "name": "clang-release",
+      "configurePreset": "clang-release",
+      "displayName": "Build Clang Release",
+      "description": "Build with Clang Release configuration"
+    },
+    {
+      "name": "msvc-debug",
+      "configurePreset": "msvc-debug",
+      "displayName": "Build MSVC Debug",
+      "description": "Build with MSVC Debug configuration",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "msvc-release",
+      "configurePreset": "msvc-release",
+      "displayName": "Build MSVC Release",
+      "description": "Build with MSVC Release configuration",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    }
+  ]
+}
