@@ -1,4 +1,5 @@
 import os
+import sys
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup, find_packages
 
@@ -25,7 +26,8 @@ ext_modules = [
         ],
         cxx_std=17,
         define_macros=[("LIBGOSSIP_BUILD", None)],
-        libraries=["stdc++"],
+        # Only add stdc++ library on non-Windows platforms
+        libraries=["stdc++"] if sys.platform != "win32" else [],
     ),
 ]
 
