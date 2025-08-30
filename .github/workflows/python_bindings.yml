@@ -35,12 +35,15 @@ jobs:
       - name: Install Python build dependencies
         run: |
           python -m pip install --upgrade pip
-          pipx install "cibuildwheel[all]" --include-deps
-          pip install build twine
+          pip install --user build twine pybind11==2.13.6
+          export PYTHONPATH=$HOME/.local/lib/python3.12/site-packages:$PYTHONPATH
+          echo "Python path configured: $PYTHONPATH"
+          python -c "import sys; print('User directory in Python path:', '$HOME/.local/lib/python3.12/site-packages' in sys.path)"
 
       - name: Debug information
         shell: bash
         run: |
+          export PYTHONPATH=$HOME/.local/lib/python3.12/site-packages:$PYTHONPATH
           echo "Python version:"
           python --version
           echo "Directory structure:"
@@ -98,10 +101,14 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine pybind11==2.13.6
+          pip install --user build twine pybind11==2.13.6
+          export PYTHONPATH=$HOME/.local/lib/python3.12/site-packages:$PYTHONPATH
+          echo "Python path configured: $PYTHONPATH"
+          python -c "import sys; print('User directory in Python path:', '$HOME/.local/lib/python3.12/site-packages' in sys.path)"
 
       - name: Debug information
         run: |
+          export PYTHONPATH=$HOME/.local/lib/python3.12/site-packages:$PYTHONPATH
           echo "Python version:"
           python --version
           echo "Directory structure:"
@@ -154,7 +161,7 @@ jobs:
 
       - name: Publish to Test PyPI
         run: |
-          twine upload --verbose --repository-url https://test.pypi.org/legacy/   dist/*
+          twine upload --verbose --repository-url https://test.pypi.org/legacy/     dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
@@ -162,7 +169,7 @@ jobs:
       - name: Publish to PyPI
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          twine upload --verbose --repository-url https://upload.pypi.org/legacy/   dist/*
+          twine upload --verbose --repository-url https://upload.pypi.org/legacy/     dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
