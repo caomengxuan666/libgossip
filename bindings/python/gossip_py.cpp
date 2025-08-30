@@ -44,10 +44,11 @@ libgossip::node_id_t generate_random_node_id() {
     libgossip::node_id_t id;
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<unsigned char> dis(0, 255);
+    // Use uint16_t instead of unsigned char to avoid MSVC compilation error
+    std::uniform_int_distribution<uint16_t> dis(0, 255);
 
     for (auto &byte: id) {
-        byte = dis(gen);
+        byte = static_cast<unsigned char>(dis(gen));
     }
     return id;
 }
@@ -81,7 +82,9 @@ PYBIND11_MODULE(libgossip_py, m) {
                 std::stringstream ss;
                 ss << "NodeId(";
                 for (size_t i = 0; i < id.size(); ++i) {
-                    if (i > 0) ss << ",";
+                    if (i > 0) {
+                        ss << ",";
+                    }
                     ss << static_cast<int>(id[i]);
                 }
                 ss << ")";
@@ -91,7 +94,9 @@ PYBIND11_MODULE(libgossip_py, m) {
                 std::stringstream ss;
                 ss << std::hex << std::setfill('0');
                 for (size_t i = 0; i < id.size(); ++i) {
-                    if (i > 0) ss << "-";
+                    if (i > 0) {
+                        ss << "-";
+                    }
                     ss << std::setw(2) << static_cast<int>(id[i]);
                 }
                 return ss.str();
