@@ -141,7 +141,7 @@ LIBGOSSIP_API size_t gossip_core_size(const gossip_core_t *core);
 LIBGOSSIP_API void gossip_core_reset(gossip_core_t *core);
 
 /// Get the internal C++ gossip core instance from the C wrapper
-LIBGOSSIP_API void* gossip_core_get_internal(gossip_core_t *core);
+LIBGOSSIP_API void *gossip_core_get_internal(gossip_core_t *core);
 
 #ifdef __cplusplus
 }

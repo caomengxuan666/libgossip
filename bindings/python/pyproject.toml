@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "libgossip"
-version = "0.2.0"
+version = "0.2.1"
 description = "Python bindings for libgossip - a C++ Gossip protocol implementation"
 readme = "README.md"
 authors = [{name = "caomengxuan666", email = "caomengxuan666@gmail.com"}]

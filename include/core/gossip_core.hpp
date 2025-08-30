@@ -55,13 +55,13 @@ namespace libgossip {
     // ---------------------------------------------------------
 
     struct node_view {
-        node_id_t id;
+        node_id_t id{};
         std::string ip;
         int port = 0;
         uint64_t config_epoch = 0;// Configuration version (for master-slave election)
         uint64_t heartbeat = 0;   // Logical heartbeat (incremental sequence number)
         uint64_t version = 0;     // Version number (version++ on each local update)
-        time_point seen_time;     // The last time this node's message was received
+        time_point seen_time{};   // The last time this node's message was received
         node_status status = node_status::unknown;
 
         // Business extension fields
@@ -71,7 +71,28 @@ namespace libgossip {
 
         // Suspicion mechanism fields
         int suspicion_count = 0;
-        time_point last_suspected;
+        time_point last_suspected{};
+
+        // Comparison operators
+        bool operator==(const node_view &other) const noexcept {
+            return id == other.id &&
+                   ip == other.ip &&
+                   port == other.port &&
+                   config_epoch == other.config_epoch &&
+                   heartbeat == other.heartbeat &&
+                   version == other.version &&
+                   seen_time == other.seen_time &&
+                   status == other.status &&
+                   role == other.role &&
+                   region == other.region &&
+                   metadata == other.metadata &&
+                   suspicion_count == other.suspicion_count &&
+                   last_suspected == other.last_suspected;
+        }
+
+        bool operator!=(const node_view &other) const noexcept {
+            return !(*this == other);
+        }
 
         // Comparison: used to determine if an update is needed
         bool newer_than(const node_view &other) const noexcept;
@@ -98,10 +119,22 @@ namespace libgossip {
     // ---------------------------------------------------------
 
     struct gossip_message {
-        node_id_t sender;
-        message_type type;
+        node_id_t sender{};
+        message_type type = message_type::ping;
         uint64_t timestamp = 0;        // Usually the sender's heartbeat
         std::vector<node_view> entries;// Carried node information (0~N nodes)
+
+        // Comparison operators
+        bool operator==(const gossip_message &other) const noexcept {
+            return sender == other.sender &&
+                   type == other.type &&
+                   timestamp == other.timestamp &&
+                   entries == other.entries;
+        }
+
+        bool operator!=(const gossip_message &other) const noexcept {
+            return !(*this == other);
+        }
     };
 
     // ---------------------------------------------------------

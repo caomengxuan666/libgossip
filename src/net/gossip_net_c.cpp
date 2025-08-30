@@ -68,8 +68,15 @@ gossip_error_code_t gossip_serializer_serialize(const gossip_serializer_t *seria
         cpp_msg.type = static_cast<libgossip::message_type>(msg->type);
         cpp_msg.timestamp = msg->timestamp;
 
-        // Note: For simplicity, we're not converting entries in this example
-        // A full implementation would need to convert the entries array
+        // Convert entries array from C to C++
+        cpp_msg.entries.clear();
+        if (msg->entries && msg->entries_count > 0) {
+            cpp_msg.entries.reserve(msg->entries_count);
+            for (size_t i = 0; i < msg->entries_count; ++i) {
+                libgossip::node_view cpp_node_view = to_cpp_node_view(&msg->entries[i]);
+                cpp_msg.entries.push_back(cpp_node_view);
+            }
+        }
 
         std::vector<uint8_t> serialized_data;
         auto result = wrapper->serializer->serialize(cpp_msg, serialized_data);
@@ -114,10 +121,23 @@ gossip_error_code_t gossip_serializer_deserialize(const gossip_serializer_t *ser
             msg->type = static_cast<gossip_message_type_t>(cpp_msg.type);
             msg->timestamp = cpp_msg.timestamp;
 
-            // Note: For simplicity, we're not converting entries in this example
-            // A full implementation would need to convert the entries array
-            msg->entries = nullptr;
-            msg->entries_count = 0;
+            // Convert entries from C++ to C
+            if (!cpp_msg.entries.empty()) {
+                msg->entries_count = cpp_msg.entries.size();
+                msg->entries = static_cast<gossip_node_view_t *>(std::malloc(sizeof(gossip_node_view_t) * msg->entries_count));
+
+                if (msg->entries) {
+                    for (size_t i = 0; i < msg->entries_count; ++i) {
+                        msg->entries[i] = to_c_node_view(cpp_msg.entries[i]);
+                    }
+                } else {
+                    msg->entries_count = 0;
+                    return GOSSIP_ERR_NETWORK_ERROR;
+                }
+            } else {
+                msg->entries = nullptr;
+                msg->entries_count = 0;
+            }
 
             return GOSSIP_ERR_SUCCESS;
         } else {

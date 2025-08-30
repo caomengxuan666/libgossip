@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(
   libgossip
-  VERSION 1.1.1
+  VERSION 1.1.2
   LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -34,7 +34,8 @@ setup_bundled_asio()
 
 # Network library
 set(LIBGOSSIP_NET_SRC src/net/udp_transport.cpp src/net/tcp_transport.cpp
-                      src/net/transport_factory.cpp src/net/gossip_net_c.cpp)
+                      src/net/transport_factory.cpp src/net/gossip_net_c.cpp
+                      src/net/json_serializer.cpp)
 
 add_library(libgossip_net ${LIBGOSSIP_NET_SRC})
 add_library(libgossip::network ALIAS libgossip_net)
@@ -115,10 +116,11 @@ install(
         ${CMAKE_CURRENT_BINARY_DIR}/libgossip_export.h
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libgossip)
 
-# Examples
+# Process examples if enabled
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
+
 # Tests
 if(BUILD_TESTS)
   find_or_fetch_googletest()

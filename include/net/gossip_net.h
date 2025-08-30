@@ -44,15 +44,15 @@ LIBGOSSIP_API void gossip_serializer_destroy(gossip_serializer_t *serializer);
 
 /// Serialize a message using the serializer
 LIBGOSSIP_API gossip_error_code_t gossip_serializer_serialize(const gossip_serializer_t *serializer,
-                                                            const gossip_message_t *msg,
-                                                            uint8_t **data,
-                                                            size_t *data_size);
+                                                              const gossip_message_t *msg,
+                                                              uint8_t **data,
+                                                              size_t *data_size);
 
 /// Deserialize data to a message using the serializer
 LIBGOSSIP_API gossip_error_code_t gossip_serializer_deserialize(const gossip_serializer_t *serializer,
-                                                              const uint8_t *data,
-                                                              size_t data_size,
-                                                              gossip_message_t *msg);
+                                                                const uint8_t *data,
+                                                                size_t data_size,
+                                                                gossip_message_t *msg);
 
 // ---------------------------------------------------------
 // Transport API functions
@@ -60,8 +60,8 @@ LIBGOSSIP_API gossip_error_code_t gossip_serializer_deserialize(const gossip_ser
 
 /// Create a transport instance
 LIBGOSSIP_API gossip_transport_t *gossip_transport_create(gossip_transport_type_t type,
-                                                         const char *host,
-                                                         uint16_t port);
+                                                          const char *host,
+                                                          uint16_t port);
 
 /// Destroy a transport instance
 LIBGOSSIP_API void gossip_transport_destroy(gossip_transport_t *transport);
@@ -74,16 +74,16 @@ LIBGOSSIP_API gossip_error_code_t gossip_transport_stop(gossip_transport_t *tran
 
 /// Send a message synchronously
 LIBGOSSIP_API gossip_error_code_t gossip_transport_send_message(gossip_transport_t *transport,
-                                                              const gossip_message_t *msg,
-                                                              const gossip_node_view_t *target);
+                                                                const gossip_message_t *msg,
+                                                                const gossip_node_view_t *target);
 
 /// Set the gossip core for the transport
 LIBGOSSIP_API void gossip_transport_set_core(gossip_transport_t *transport,
-                                            gossip_core_t *core);
+                                             gossip_core_t *core);
 
 /// Set the serializer for the transport
 LIBGOSSIP_API void gossip_transport_set_serializer(gossip_transport_t *transport,
-                                                  gossip_serializer_t *serializer);
+                                                   gossip_serializer_t *serializer);
 
 // ---------------------------------------------------------
 // Transport factory functions
@@ -91,11 +91,11 @@ LIBGOSSIP_API void gossip_transport_set_serializer(gossip_transport_t *transport
 
 /// Create a transport using the factory
 LIBGOSSIP_API gossip_transport_t *gossip_transport_factory_create(gossip_transport_type_t type,
-                                                                 const char *host,
-                                                                 uint16_t port);
+                                                                  const char *host,
+                                                                  uint16_t port);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // GOSSIP_NET_C_H
+#endif// GOSSIP_NET_C_H

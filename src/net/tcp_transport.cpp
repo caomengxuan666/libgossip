@@ -178,18 +178,36 @@ namespace gossip {
                                                 handle_socket_receive(*buffer, bytes_transferred);
                                                 // Continue receiving data
                                                 start_receive_from_socket(socket);
+                                            } else if (error) {
+                                                std::cerr << "Error receiving data: " << error.message() << std::endl;
+                                                // Remove socket from list
+                                                auto it = std::find(sockets_.begin(), sockets_.end(), socket);
+                                                if (it != sockets_.end()) {
+                                                    sockets_.erase(it);
+                                                }
                                             }
                                         });
             }
 
             void handle_socket_receive(const std::vector<char> &buffer, std::size_t bytes_transferred) {
-                // In a real implementation, we would deserialize the received data and pass it to gossip core
+                // Process received data
                 std::cout << "Received " << bytes_transferred << " bytes via TCP" << std::endl;
 
                 // If we have gossip core and serializer, process the received message
                 if (core_ && serializer_) {
-                    // In a real implementation, we would deserialize data and pass it to core
-                    // This is just an example
+                    // Convert received data to vector of uint8_t
+                    std::vector<uint8_t> data(buffer.begin(), buffer.begin() + static_cast<std::vector<char>::difference_type>(bytes_transferred));
+
+                    // Deserialize message
+                    libgossip::gossip_message msg;
+                    error_code ec = serializer_->deserialize(data, msg);
+                    if (ec == error_code::success) {
+                        // Pass message to gossip core
+                        auto now = std::chrono::steady_clock::now();
+                        core_->handle_message(msg, now);
+                    } else {
+                        std::cerr << "Failed to deserialize received message, error code: " << static_cast<int>(ec) << std::endl;
+                    }
                 }
             }
 
@@ -198,11 +216,17 @@ namespace gossip {
                 // Simulate receive process
                 std::cout << "Simulating TCP receipt of " << data.size() << " bytes" << std::endl;
 
-                // If we have core instance, simulate message processing
-                if (core_) {
-                    // In a real implementation, we would deserialize message and pass it to core
-                    auto now = std::chrono::steady_clock::now();
-                    // core_->handle_message(deserialized_message, now);
+                // If we have core instance and serializer, simulate message processing
+                if (core_ && serializer_) {
+                    // Deserialize message
+                    libgossip::gossip_message msg;
+                    error_code ec = serializer_->deserialize(data, msg);
+                    if (ec == error_code::success) {
+                        auto now = std::chrono::steady_clock::now();
+                        core_->handle_message(msg, now);
+                    } else {
+                        std::cerr << "Failed to deserialize simulated message, error code: " << static_cast<int>(ec) << std::endl;
+                    }
                 }
             }
 

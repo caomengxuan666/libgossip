@@ -27,7 +27,7 @@ if(TARGET GTest::gtest)
   # Apply coverage settings to all test targets at once if enabled
   if(ENABLE_COVERAGE)
     # Get all created test targets
-    set(TEST_TARGETS gossip_core_tests transport_tests serializer_tests)
+    set(TEST_TARGETS gossip_core_tests transport_tests serializer_tests c_binding_tests)
     include(CodeCoverage)
     apply_coverage_to_targets(${TEST_TARGETS})
   endif()

@@ -18,6 +18,7 @@ ext_modules = [
             "../../src/net/udp_transport.cpp",
             "../../src/net/tcp_transport.cpp",
             "../../src/net/transport_factory.cpp"
+            "../../src/net/json_serializer.cpp"
         ],
         include_dirs=[
             "../../include",
