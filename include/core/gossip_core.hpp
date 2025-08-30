@@ -1,5 +1,16 @@
-// include/core/gossip.hpp
-#pragma once
+/**
+ * @file gossip_core.hpp
+ * @brief Core implementation of the gossip protocol
+ *
+ * This file contains the core implementation of the gossip protocol based on SWIM.
+ * It provides node membership management, failure detection, and metadata propagation.
+ *
+ * @author caomengxuan666
+ * @date 2025-05-13
+ */
+
+#ifndef LIBGOSSIP_CORE_HPP
+#define LIBGOSSIP_CORE_HPP
 
 #include "libgossip_api.h"
 #include <array>
@@ -225,3 +236,4 @@ namespace libgossip {
     };
 
 }// namespace libgossip
+#endif

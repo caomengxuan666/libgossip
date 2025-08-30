@@ -1,4 +1,4 @@
-#include "core/gossip_c.h"
+#include "core/gossip_core.h"
 #include "core/gossip_core.hpp"
 #include <cstdlib>
 #include <cstring>

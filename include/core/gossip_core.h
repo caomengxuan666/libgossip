@@ -1,9 +1,9 @@
 #ifndef GOSSIP_C_H
 #define GOSSIP_C_H
 
+#include "libgossip_api.h"
 #include <stddef.h>
 #include <stdint.h>
-#include "libgossip_api.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -78,7 +78,7 @@ typedef struct gossip_message {
 // ---------------------------------------------------------
 
 /// Send message callback
-typedef  void (*gossip_send_callback_t)(const gossip_message_t *msg,
+typedef void (*gossip_send_callback_t)(const gossip_message_t *msg,
                                        const gossip_node_view_t *target,
                                        void *user_data);
 
@@ -93,9 +93,9 @@ typedef void (*gossip_event_callback_t)(const gossip_node_view_t *node,
 
 /// Create a new gossip core instance
 LIBGOSSIP_API gossip_core_t *gossip_core_create(const gossip_node_view_t *self_node,
-                                  gossip_send_callback_t send_callback,
-                                  gossip_event_callback_t event_callback,
-                                  void *user_data);
+                                                gossip_send_callback_t send_callback,
+                                                gossip_event_callback_t event_callback,
+                                                void *user_data);
 
 /// Destroy a gossip core instance
 LIBGOSSIP_API void gossip_core_destroy(gossip_core_t *core);
@@ -108,7 +108,7 @@ LIBGOSSIP_API void gossip_core_tick_full_broadcast(gossip_core_t *core);
 
 /// Process a received gossip message
 LIBGOSSIP_API void gossip_core_handle_message(gossip_core_t *core,
-                                const gossip_message_t *msg);
+                                              const gossip_message_t *msg);
 
 /// Actively initiate join: introduce a new node
 LIBGOSSIP_API void gossip_core_meet(gossip_core_t *core, const gossip_node_view_t *node);
@@ -124,15 +124,15 @@ LIBGOSSIP_API const gossip_node_view_t *gossip_core_self(const gossip_core_t *co
 
 /// Get all currently known nodes
 LIBGOSSIP_API gossip_node_view_t *gossip_core_get_nodes(const gossip_core_t *core,
-                                          size_t *count);
+                                                        size_t *count);
 
 /// Free node list returned by gossip_core_get_nodes
 LIBGOSSIP_API void gossip_core_free_nodes(gossip_node_view_t *nodes);
 
 /// Find node by ID
 LIBGOSSIP_API int gossip_core_find_node(const gossip_core_t *core,
-                          const gossip_node_id_t *id,
-                          gossip_node_view_t *out_node);
+                                        const gossip_node_id_t *id,
+                                        gossip_node_view_t *out_node);
 
 /// Get node count
 LIBGOSSIP_API size_t gossip_core_size(const gossip_core_t *core);

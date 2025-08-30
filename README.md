@@ -17,7 +17,7 @@ libgossip is a C++17 implementation of the Gossip protocol, designed for decentr
 - **Failure Detection**: Efficiently detects node failures using heartbeat mechanism with suspicion timeouts
 - **Metadata Propagation**: Distributes node metadata across the cluster using anti-entropy gossip
 - **Event System**: Notifies applications of node status changes and metadata updates
-- **Header-only Library**: Easy integration with minimal dependencies
+- **Modular Design**: Separates core protocol implementation from network transport layer
 - **C API**: Provides C bindings for non-C++ applications
 - **Python Bindings**: Provides Python bindings for easy integration with Python applications
 
@@ -49,6 +49,8 @@ You can integrate libgossip into your project in two ways:
 ```cmake
 find_package(libgossip REQUIRED)
 target_link_libraries(your_target libgossip::core)
+# For network functionality:
+target_link_libraries(your_target libgossip::network)
 ```
 
 2. Using add_subdirectory (without installation):
@@ -56,6 +58,8 @@ target_link_libraries(your_target libgossip::core)
 ```cmake
 add_subdirectory(path/to/libgossip)
 target_link_libraries(your_target libgossip::core)
+# For network functionality:
+target_link_libraries(your_target libgossip::network)
 ```
 
 ### Installation
@@ -69,6 +73,27 @@ cmake ..
 cmake --build .
 sudo cmake --install .
 ```
+
+## Modules
+
+### Core Module
+
+The core module implements the Gossip protocol logic including membership management, failure detection, and metadata propagation.
+
+- [gossip_core](include/core/gossip_core.hpp) - Main protocol implementation
+- [node_view](include/core/gossip_core.hpp) - Node representation with metadata
+- [gossip_message](include/core/gossip_core.hpp) - Message structure for network transport
+
+### Network Module
+
+The network module provides transport layer implementations for the Gossip protocol.
+
+- [Transport interface](include/net/udp_transport.hpp) - Abstract transport interface
+- [UDP Transport](include/net/udp_transport.hpp) - UDP-based transport implementation using ASIO
+- [TCP Transport](include/net/tcp_transport.hpp) - TCP-based reliable transport implementation
+- [Transport Factory](include/net/transport_factory.hpp) - Factory for creating transport instances
+- [Message Serializer](include/net/udp_transport.hpp) - Abstract message serialization interface
+- [JSON Serializer](include/net/json_serializer.hpp) - JSON-based message serialization implementation
 
 ## Usage Examples
 
@@ -84,6 +109,7 @@ Python examples are available in the [bindings/python](bindings/python/) directo
 - [Seed-based Cluster](examples/seed_cluster.cpp) - Real-world deployment using seed nodes
 - [Advanced Cluster](examples/advanced_cluster.cpp) - Advanced features including metadata and graceful leave
 - [Simple Cluster (C API)](examples/simple_cluster_c.c) - Using the C API bindings
+- [Network Example](examples/network_example.cpp) - Network layer usage example
 
 Each example demonstrates different aspects of the library usage patterns.
 
@@ -94,6 +120,15 @@ Each example demonstrates different aspects of the library usage patterns.
 - [gossip_core](include/core/gossip_core.hpp) - Main protocol implementation
 - [node_view](include/core/gossip_core.hpp) - Node representation with metadata
 - [gossip_message](include/core/gossip_core.hpp) - Message structure for network transport
+
+### Network Classes
+
+- [transport](include/net/udp_transport.hpp) - Abstract transport interface
+- [udp_transport](include/net/udp_transport.hpp) - UDP-based transport implementation
+- [tcp_transport](include/net/tcp_transport.hpp) - TCP-based transport implementation
+- [transport_factory](include/net/transport_factory.hpp) - Factory for creating transport instances
+- [message_serializer](include/net/udp_transport.hpp) - Abstract message serialization interface
+- [json_serializer](include/net/json_serializer.hpp) - JSON-based message serialization implementation
 
 ### Python API Classes
 
@@ -130,6 +165,7 @@ Detailed examples are provided in the [examples](examples/) directory:
 2. **seed_cluster.cpp** - Demonstrates realistic deployment using seed nodes
 3. **advanced_cluster.cpp** - Illustrates advanced features like metadata and graceful leave
 4. **simple_cluster_c.c** - Shows how to use the C API bindings
+5. **network_example.cpp** - Shows how to use the network layer with different transport protocols
 
 To build and run examples:
 
@@ -141,6 +177,7 @@ cmake --build .
 ./examples/seed_cluster
 ./examples/advanced_cluster
 ./examples/simple_cluster_c
+./examples/network_example
 python ../bindings/python/example.py
 python ../bindings/python/two_node_example.py
 python ../bindings/python/debug_example.py
@@ -154,6 +191,7 @@ cmake --build .
 ./examples/seed_cluster
 ./examples/advanced_cluster
 ./examples/simple_cluster_c
+./examples/network_example
 ```
 
 ## Roadmap: From Core Library to Production System
@@ -174,8 +212,9 @@ The core layer is network-agnostic, now we need concrete transport implementatio
 
 ✅ **Example:**
 ```
-auto transport = std::make_shared<UdpTransport>("127.0.0.1", 8000);
+auto transport = transport_factory::create_transport(transport_type::udp, "127.0.0.1", 8000);
 transport->set_gossip_core(gossip_core);
+transport->set_serializer(std::make_unique<json_serializer>());
 transport->start();
 ```
 
@@ -354,7 +393,7 @@ libgossip是一个使用C++17实现的Gossip协议库，专为去中心化的分
 - **故障检测**：使用心跳机制和怀疑超时机制高效检测节点故障
 - **元数据传播**：使用反熵gossip在集群中分发节点元数据
 - **事件系统**：在节点状态变化和元数据更新时通知应用程序
-- **仅头文件库**：易于集成，依赖项少
+- **模块化设计**：将核心协议实现与网络传输层分离
 - **C API**：为非C++应用程序提供C语言绑定
 
 ## 安装和集成
@@ -384,6 +423,8 @@ cmake --build .
 ```
 find_package(libgossip REQUIRED)
 target_link_libraries(your_target libgossip::core)
+# For network functionality:
+target_link_libraries(your_target libgossip::network)
 ```
 
 2. 使用add_subdirectory（无需安装）：
@@ -391,6 +432,8 @@ target_link_libraries(your_target libgossip::core)
 ```
 add_subdirectory(path/to/libgossip)
 target_link_libraries(your_target libgossip::core)
+# For network functionality:
+target_link_libraries(your_target libgossip::network)
 ```
 
 ### 安装
@@ -405,6 +448,27 @@ cmake --build .
 sudo cmake --install .
 ```
 
+## 模块
+
+### 核心模块
+
+核心模块实现了Gossip协议逻辑，包括成员管理、故障检测和元数据传播。
+
+- [gossip_core](include/core/gossip_core.hpp) - 主协议实现
+- [node_view](include/core/gossip_core.hpp) - 带元数据的节点表示
+- [gossip_message](include/core/gossip_core.hpp) - 用于网络传输的消息结构
+
+### 网络模块
+
+网络模块为Gossip协议提供传输层实现。
+
+- [传输接口](include/net/udp_transport.hpp) - 抽象传输接口
+- [UDP传输](include/net/udp_transport.hpp) - 基于ASIO的UDP传输实现
+- [TCP传输](include/net/tcp_transport.hpp) - 基于TCP的可靠传输实现
+- [传输工厂](include/net/transport_factory.hpp) - 用于创建传输实例的工厂
+- [消息序列化器](include/net/udp_transport.hpp) - 抽象消息序列化接口
+- [JSON序列化器](include/net/json_serializer.hpp) - 基于JSON的消息序列化实现
+
 ## 使用示例
 
 请参阅[examples](examples/)目录获取详细的使用示例：
@@ -413,6 +477,7 @@ sudo cmake --install .
 - [Seed-based Cluster](examples/seed_cluster.cpp) - 使用种子节点的真实部署
 - [Advanced Cluster](examples/advanced_cluster.cpp) - 高级功能包括元数据和优雅离开
 - [Simple Cluster (C API)](examples/simple_cluster_c.c) - 使用C API绑定
+- [Network Example](examples/network_example.cpp) - 网络层使用示例
 
 每个示例都演示了库使用的不同方面。
 
@@ -423,6 +488,15 @@ sudo cmake --install .
 - [gossip_core](include/core/gossip_core.hpp) - 主协议实现
 - [node_view](include/core/gossip_core.hpp) - 带元数据的节点表示
 - [gossip_message](include/core/gossip_core.hpp) - 用于网络传输的消息结构
+
+### 网络类
+
+- [transport](include/net/udp_transport.hpp) - 抽象传输接口
+- [udp_transport](include/net/udp_transport.hpp) - 基于UDP的传输实现
+- [tcp_transport](include/net/tcp_transport.hpp) - 基于TCP的传输实现
+- [transport_factory](include/net/transport_factory.hpp) - 用于创建传输实例的工厂
+- [message_serializer](include/net/udp_transport.hpp) - 抽象消息序列化接口
+- [json_serializer](include/net/json_serializer.hpp) - 基于JSON的消息序列化实现
 
 ### C API函数
 
@@ -450,6 +524,7 @@ sudo cmake --install .
 2. **seed_cluster.cpp** - 演示使用种子节点的真实部署
 3. **advanced_cluster.cpp** - 展示高级功能如元数据和优雅离开
 4. **simple_cluster_c.c** - 展示如何使用C API绑定
+5. **network_example.cpp** - 展示如何使用网络层和不同传输协议
 
 构建和运行示例：
 
@@ -461,6 +536,7 @@ cmake --build .
 ./examples/seed_cluster
 ./examples/advanced_cluster
 ./examples/simple_cluster_c
+./examples/network_example
 ```
 
 ## 发展路线图：从核心库到生产系统
@@ -481,8 +557,9 @@ libgossip-core已经是分布式系统的坚实基础。以下是未来的发展
 
 ✅ **示例：**
 ```
-auto transport = std::make_shared<UdpTransport>("127.0.0.1", 8000);
+auto transport = transport_factory::create_transport(transport_type::udp, "127.0.0.1", 8000);
 transport->set_gossip_core(gossip_core);
+transport->set_serializer(std::make_unique<json_serializer>());
 transport->start();
 ```
 
@@ -592,21 +669,3 @@ auto services = gossip_core.get_services("user-service");
 
 ### 10. 开源与社区建设
 将我们的成果分享给世界。
-
-## Python 绑定
-
-`libgossip` 还提供了 Python 绑定，便于与 Python 应用程序轻松集成。
-
-### 构建 Python 绑定
-
-要构建 Python 绑定，你需要先安装 `pybind11`：
-
-```bash
-# 将 pybind11 仓库作为子模块克隆
-git submodule update --init
-
-# 启用 Python 绑定进行构建（默认开启）
-mkdir build
-cd build
-cmake .. -DBUILD_PYTHON_BINDINGS=ON
-cmake --build .

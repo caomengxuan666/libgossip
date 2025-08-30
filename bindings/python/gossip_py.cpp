@@ -6,19 +6,19 @@
 #endif
 
 #include <ostream>
-#include <sstream>
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <sstream>
 // When building with CMake, use installed headers
 #ifdef LIBGOSSIP_BUILD
-#include "core/gossip_c.h"
+#include "core/gossip_core.h"
 #include "core/gossip_core.hpp"
 #include <iomanip>
 #include <random>
 #else
 // When building with setup.py, use relative paths
-#include "../../include/core/gossip_c.h"
+#include "../../include/core/gossip_core.h"
 #include "../../include/core/gossip_core.hpp"
 #endif
 
