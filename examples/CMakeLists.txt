@@ -16,9 +16,6 @@ endif()
 add_executable(simple_cluster simple_cluster.cpp)
 target_link_libraries(simple_cluster ${LIBGOSSIP_TARGET})
 
-add_executable(simple_cluster_c simple_cluster_c.c)
-target_link_libraries(simple_cluster_c ${LIBGOSSIP_TARGET})
-
 add_executable(seed_cluster seed_cluster.cpp)
 target_link_libraries(seed_cluster ${LIBGOSSIP_TARGET})
 
@@ -39,3 +36,20 @@ target_link_libraries(transport_factory_example libgossip libgossip_net)
 
 add_executable(serializer_example serializer_example.cpp)
 target_link_libraries(serializer_example libgossip libgossip_net)
+
+# ==========================C Bindings===================================== #
+
+# Simple C cluster example
+add_executable(simple_cluster_c simple_cluster_c.c)
+target_link_libraries(simple_cluster_c PRIVATE libgossip)
+
+# C API with network layer example
+add_executable(net_c_api_example net_c_api_example.c)
+target_link_libraries(net_c_api_example PRIVATE libgossip libgossip_net)
+
+# C API examples are built only on Windows (due to different linking requirements)
+if(WIN32)
+  # Simple C cluster example for Windows
+  add_executable(simple_cluster_c_win simple_cluster_c.c)
+  target_link_libraries(simple_cluster_c_win PRIVATE libgossip)
+endif()

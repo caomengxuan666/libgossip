@@ -20,3 +20,5 @@ bindings/python/dist/
 *.o
 *.so
 *.dll
+html/
+latex/

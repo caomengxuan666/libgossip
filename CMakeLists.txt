@@ -34,7 +34,7 @@ setup_bundled_asio()
 
 # Network library
 set(LIBGOSSIP_NET_SRC src/net/udp_transport.cpp src/net/tcp_transport.cpp
-                      src/net/transport_factory.cpp)
+                      src/net/transport_factory.cpp src/net/gossip_net_c.cpp)
 
 add_library(libgossip_net ${LIBGOSSIP_NET_SRC})
 add_library(libgossip::network ALIAS libgossip_net)

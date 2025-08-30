@@ -297,11 +297,20 @@ size_t gossip_core_size(const gossip_core_t *core) {
     return wrapper->core->size();
 }
 
+/// Reset core state
 void gossip_core_reset(gossip_core_t *core) {
-    if (core) {
-        gossip_core_wrapper *wrapper = (gossip_core_wrapper *) core;
+    if (!core) return;
+    auto wrapper = reinterpret_cast<gossip_core_wrapper *>(core);
+    if (wrapper->core) {
         wrapper->core->reset();
     }
+}
+
+/// Get the internal C++ gossip core instance from the C wrapper
+void* gossip_core_get_internal(gossip_core_t *core) {
+    if (!core) return nullptr;
+    auto wrapper = reinterpret_cast<gossip_core_wrapper *>(core);
+    return wrapper->core.get();
 }
 
 }// extern "C"
