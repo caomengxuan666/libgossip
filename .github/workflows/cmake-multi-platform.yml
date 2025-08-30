@@ -51,17 +51,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-test.txt
-          sudo apt-get install -y build-essential cmake clang lcov
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-test.txt
 
       - name: Configure CMake (Windows)
         if: matrix.is_windows
@@ -71,9 +60,6 @@ jobs:
             -G "${{ matrix.generator }}" ^
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ^
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} ^
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} ^
-            -DBUILD_PYTHON_BINDINGS=ON ^
-            -DBUILD_TESTS=ON
             -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} ^
             -DBUILD_PYTHON_BINDINGS=ON ^
             -DBUILD_TESTS=ON
@@ -126,11 +112,11 @@ jobs:
         shell: bash
         run: |
           cd build
-          lcov --capture --directory . --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' --output-file coverage.info
-          lcov --remove coverage.info '*/googletest/*' --output-file coverage.info
-          lcov --remove coverage.info '*/tests/*' --output-file coverage.info
-          genhtml coverage.info --output-directory coverage_report
+          lcov --capture --directory . --output-file coverage.info --ignore-errors mismatch,version,gcov,empty
+          lcov --remove coverage.info '/usr/*' --output-file coverage.info --ignore-errors unused,mismatch,version,gcov,empty
+          lcov --remove coverage.info '*/googletest/*' --output-file coverage.info --ignore-errors unused,mismatch,version,gcov,empty
+          lcov --remove coverage.info '*/tests/*' --output-file coverage.info --ignore-errors unused,mismatch,version,gcov,empty
+          genhtml coverage.info --output-directory coverage_report --ignore-errors empty
 
       - name: Upload Coverage Report (Linux)
         if: matrix.is_windows == false

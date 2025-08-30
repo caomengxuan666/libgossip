@@ -182,58 +182,65 @@ endif()
 
 if(BUILD_PYTHON_BINDINGS)
   add_subdirectory(bindings/python)
-  
-  # Add Python tests to the main test target if both BUILD_TESTS and BUILD_PYTHON_BINDINGS are enabled
+
+  # Add Python tests to the main test target if both BUILD_TESTS and
+  # BUILD_PYTHON_BINDINGS are enabled
   if(BUILD_TESTS)
     find_package(Python COMPONENTS Interpreter)
     if(Python_Interpreter_FOUND)
-      # Check if pytest is available, if not, try to install it from requirements
+      # Check if pytest is available, if not, try to install it from
+      # requirements
       execute_process(
         COMMAND ${Python_EXECUTABLE} -c "import pytest"
         RESULT_VARIABLE PYTEST_AVAILABLE
-        OUTPUT_QUIET
-        ERROR_QUIET
-      )
-      
+        OUTPUT_QUIET ERROR_QUIET)
+
       if(NOT PYTEST_AVAILABLE EQUAL 0)
-        message(STATUS "pytest not found, trying to install test dependencies...")
+        message(
+          STATUS "pytest not found, trying to install test dependencies...")
         execute_process(
-          COMMAND ${Python_EXECUTABLE} -m pip install -r ${CMAKE_SOURCE_DIR}/requirements-test.txt
+          COMMAND ${Python_EXECUTABLE} -m pip install -r
+                  ${CMAKE_SOURCE_DIR}/requirements-test.txt
           RESULT_VARIABLE PIP_INSTALL_RESULT
           OUTPUT_VARIABLE PIP_INSTALL_OUTPUT
-          ERROR_VARIABLE PIP_INSTALL_ERROR
-        )
-        
+          ERROR_VARIABLE PIP_INSTALL_ERROR)
+
         if(NOT PIP_INSTALL_RESULT EQUAL 0)
-          message(WARNING "Failed to install test dependencies automatically. Please install them manually with: pip install -r requirements-test.txt")
+          message(
+            WARNING
+              "Failed to install test dependencies automatically. Please install them manually with: pip install -r requirements-test.txt"
+          )
         else()
           message(STATUS "Successfully installed test dependencies")
         endif()
       endif()
-      
-      # Add a CTest target for Python tests
-      # Set PYTHONPATH to use the built module instead of any installed version
+
+      # Add a CTest target for Python tests Set PYTHONPATH to use the built
+      # module instead of any installed version
       add_test(
         NAME python_tests
-        COMMAND ${Python_EXECUTABLE} -m pytest ${CMAKE_SOURCE_DIR}/bindings/python/test_libgossip.py -v
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bindings/python
-      )
-      
+        COMMAND ${Python_EXECUTABLE} -m pytest
+                ${CMAKE_SOURCE_DIR}/bindings/python/test_libgossip.py -v
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bindings/python)
+
       # Set environment for the test to use the built module
-      set_tests_properties(python_tests PROPERTIES
-        ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/bindings/python:$ENV{PYTHONPATH}"
-        PASS_REGULAR_EXPRESSION ".* passed.*"
-        FAIL_REGULAR_EXPRESSION ".* failed.*"
-      )
-      
+      set_tests_properties(
+        python_tests
+        PROPERTIES
+          ENVIRONMENT
+          "PYTHONPATH=${CMAKE_SOURCE_DIR}/bindings/python:$ENV{PYTHONPATH}"
+          PASS_REGULAR_EXPRESSION
+          ".* passed.*"
+          FAIL_REGULAR_EXPRESSION
+          ".* failed.*")
+
       add_custom_target(
         run_python_tests
         COMMAND ${Python_EXECUTABLE} -m pytest test_libgossip.py -v
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bindings/python
         COMMENT "Running Python tests"
-        USES_TERMINAL
-      )
-      
+        USES_TERMINAL)
+
       # Add a target that runs both C++ and Python tests
       add_custom_target(
         all_tests
@@ -241,12 +248,17 @@ if(BUILD_PYTHON_BINDINGS)
         COMMAND ${Python_EXECUTABLE} -m pytest test_libgossip.py -v
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bindings/python
         COMMENT "Running all tests (C++ and Python)"
-        USES_TERMINAL
+        USES_TERMINAL)
+
+      message(
+        STATUS
+          "Python tests integrated. Use 'make run_python_tests' to run Python tests"
       )
-      
-      message(STATUS "Python tests integrated. Use 'make run_python_tests' to run Python tests")
       message(STATUS "Use 'make all_tests' to run both C++ and Python tests")
-      message(STATUS "Python tests are registered with CTest. Use 'ctest -V' to run all tests including Python tests")
+      message(
+        STATUS
+          "Python tests are registered with CTest. Use 'ctest -V' to run all tests including Python tests"
+      )
     endif()
   endif()
 endif()

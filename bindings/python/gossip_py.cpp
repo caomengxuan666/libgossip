@@ -3,36 +3,36 @@
 // Include the core implementation directly when building the Python module
 #include "../../src/core/gossip_c.cpp"
 #include "../../src/core/gossip_core.cpp"
-#include "../../src/net/udp_transport.cpp"
 #include "../../src/net/tcp_transport.cpp"
 #include "../../src/net/transport_factory.cpp"
+#include "../../src/net/udp_transport.cpp"
 #endif
 
+#include <iomanip>
+#include <memory>
+#include <ostream>
+#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/functional.h>
-#include <memory>
+#include <random>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <ostream>
-#include <sstream>
-#include <iomanip>
-#include <random>
 
 // When building with CMake, use installed headers
 #ifdef LIBGOSSIP_BUILD
 #include "core/gossip_core.hpp"
-#include "net/udp_transport.hpp"
-#include "net/tcp_transport.hpp"
 #include "net/json_serializer.hpp"
+#include "net/tcp_transport.hpp"
 #include "net/transport_factory.hpp"
+#include "net/udp_transport.hpp"
 #else
 // When building with setup.py, use relative paths
 #include "../../include/core/gossip_core.hpp"
-#include "../../include/net/udp_transport.hpp"
-#include "../../include/net/tcp_transport.hpp"
 #include "../../include/net/json_serializer.hpp"
+#include "../../include/net/tcp_transport.hpp"
 #include "../../include/net/transport_factory.hpp"
+#include "../../include/net/udp_transport.hpp"
 #endif
 
 namespace py = pybind11;
@@ -220,6 +220,5 @@ PYBIND11_MODULE(libgossip_py, m) {
             .def_static("create_transport", [](gossip::net::transport_type type, const std::string &host, uint16_t port) { 
                 std::unique_ptr<gossip::net::transport> transport = gossip::net::transport_factory::create_transport(type, host, port);
                 std::shared_ptr<gossip::net::transport> shared_transport(std::move(transport));
-                return shared_transport;
-            }, py::return_value_policy::take_ownership);
+                return shared_transport; }, py::return_value_policy::take_ownership);
 }
