@@ -10,7 +10,6 @@
 #include "net/json_serializer.hpp"
 #include <iomanip>
 #include <iostream>
-#include <vector>
 
 // ========================================================================
 // Helper functions

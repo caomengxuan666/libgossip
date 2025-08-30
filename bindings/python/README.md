@@ -60,6 +60,7 @@ python -m libgossip.example
 cd libgossip
 python sdk_example.py
 python decorator_example.py
+python advanced_decorator_example.py
 cd ..
 ```
 
@@ -144,7 +145,68 @@ The package provides both low-level and high-level APIs:
 - `create_cluster()` - Convenience function to create a cluster of nodes
 
 ### Decorators
+
+libgossip provides a rich set of decorators to simplify network programming:
+
+#### Basic Decorators
 - `@message_handler` - Decorator for message handlers
 - `@event_handler` - Decorator for event handlers
 - `@node.on_message` - Method decorator for message handlers
 - `@node.on_event` - Method decorator for event handlers
+
+#### Filtering Decorators
+- `@message_type_filter(*message_types)` - Filter message handlers by message type
+- `@node_status_monitor(*statuses)` - Filter event handlers by node status changes
+
+#### Robustness Decorators
+- `@retry_on_network_error(max_retries=3, delay=0.1)` - Automatically retry network operations on failure
+- `@circuit_breaker(max_failures=3, timeout=60)` - Circuit breaker pattern for network operations
+- `@with_timeout(timeout=5.0)` - Add timeout to network operations
+
+#### Performance Decorators
+- `@rate_limit(calls_per_second=1)` - Rate limit network operations
+- `@measure_latency` - Measure network operation latency
+- `@async_network_operation` - Run network operations asynchronously
+
+#### Lifecycle Decorators
+- `@node_lifecycle(auto_start=True, auto_stop=True)` - Automatically manage node lifecycle
+
+#### Cluster Decorators
+- `@broadcast_to_cluster(exclude_self=True)` - Automatically broadcast messages to all nodes in cluster
+
+### Example Usage of Decorators
+
+```python
+import libgossip
+
+# Filter messages by type
+@libgossip.message_type_filter(libgossip.MessageType.PING, libgossip.MessageType.PONG)
+def handle_ping_pong(msg, target):
+    print(f"Handling {msg.type} from {target.ip}:{target.port}")
+
+# Monitor specific node status changes
+@libgossip.node_status_monitor(libgossip.NodeStatus.ONLINE, libgossip.NodeStatus.FAILED)
+def handle_status_change(node, old_status):
+    print(f"Node {node.ip}:{node.port} changed from {old_status} to {node.status}")
+
+# Add retry logic to network operations
+@libgossip.retry_on_network_error(max_retries=3, delay=0.5)
+def robust_send(node, msg, target):
+    return node.send_message(msg, target)
+
+# Rate limit operations
+@libgossip.rate_limit(calls_per_second=10)
+def frequent_operation(node):
+    # This will be limited to 10 calls per second
+    pass
+
+# Add circuit breaker protection
+@libgossip.circuit_breaker(max_failures=5, timeout=30)
+def protected_network_call(node, msg, target):
+    return node.send_message(msg, target)
+
+# Measure operation latency
+@libgossip.measure_latency
+def timed_operation(node):
+    node.tick()
+```

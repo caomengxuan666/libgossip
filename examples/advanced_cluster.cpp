@@ -1,6 +1,5 @@
 // examples/advanced_cluster.cpp
 #include "core/gossip_core.hpp"
-#include <chrono>
 #include <iostream>
 #include <memory>
 #include <thread>

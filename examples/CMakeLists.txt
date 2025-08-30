@@ -3,14 +3,14 @@
 # Try to find libgossip package
 find_package(libgossip QUIET)
 
-if (NOT libgossip_FOUND)
-    # If not found, use the local build
-    message(STATUS "Using local libgossip build")
-    set(LIBGOSSIP_TARGET libgossip)
+if(NOT libgossip_FOUND)
+  # If not found, use the local build
+  message(STATUS "Using local libgossip build")
+  set(LIBGOSSIP_TARGET libgossip)
 else()
-    # If found, use the installed package
-    message(STATUS "Using installed libgossip package")
-    set(LIBGOSSIP_TARGET libgossip::core)
+  # If found, use the installed package
+  message(STATUS "Using installed libgossip package")
+  set(LIBGOSSIP_TARGET libgossip::core)
 endif()
 
 add_executable(simple_cluster simple_cluster.cpp)
@@ -24,3 +24,18 @@ target_link_libraries(seed_cluster ${LIBGOSSIP_TARGET})
 
 add_executable(advanced_cluster advanced_cluster.cpp)
 target_link_libraries(advanced_cluster ${LIBGOSSIP_TARGET})
+
+add_executable(network_example network_example.cpp)
+target_link_libraries(network_example libgossip libgossip_net)
+
+add_executable(udp_transport_example udp_transport_example.cpp)
+target_link_libraries(udp_transport_example libgossip libgossip_net)
+
+add_executable(tcp_transport_example tcp_transport_example.cpp)
+target_link_libraries(tcp_transport_example libgossip libgossip_net)
+
+add_executable(transport_factory_example transport_factory_example.cpp)
+target_link_libraries(transport_factory_example libgossip libgossip_net)
+
+add_executable(serializer_example serializer_example.cpp)
+target_link_libraries(serializer_example libgossip libgossip_net)

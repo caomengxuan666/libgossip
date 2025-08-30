@@ -13,14 +13,19 @@ ext_modules = [
         [
             "gossip_py.cpp",
             "../../src/core/gossip_core.cpp",
-            "../../src/core/gossip_c.cpp"
+            "../../src/core/gossip_c.cpp",
+            "../../src/net/udp_transport.cpp",
+            "../../src/net/tcp_transport.cpp",
+            "../../src/net/transport_factory.cpp"
         ],
         include_dirs=[
             "../../include",
             "../../src",
+            "../../third_party/asio/asio/include"
         ],
         cxx_std=17,
         define_macros=[("LIBGOSSIP_BUILD", None)],
+        libraries=["stdc++"],
     ),
 ]
 

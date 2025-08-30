@@ -1,14 +1,5 @@
 # libgossip
 
-## Language Index 语言索引
-
-- [English](#english-version)
-- [中文版本](#中文版本)
-
-<!-- English Version -->
-<a id="english-version"></a>
-# libgossip
-
 libgossip is a C++17 implementation of the Gossip protocol, designed for decentralized distributed systems. It provides robust node discovery, failure detection, and metadata propagation with an emphasis on reliability and performance.
 
 ## Features
@@ -99,19 +90,13 @@ The network module provides transport layer implementations for the Gossip proto
 
 See the [examples](examples/) directory for detailed usage examples:
 
-Python examples are available in the [bindings/python](bindings/python/) directory:
-
-- [example.py](bindings/python/example.py) - Basic single node example
-- [two_node_example.py](bindings/python/two_node_example.py) - Two-node interaction example
-- [debug_example.py](bindings/python/debug_example.py) - Debug information example
-
 - [Simple Cluster](examples/simple_cluster.cpp) - Basic full-mesh cluster setup
 - [Seed-based Cluster](examples/seed_cluster.cpp) - Real-world deployment using seed nodes
 - [Advanced Cluster](examples/advanced_cluster.cpp) - Advanced features including metadata and graceful leave
-- [Simple Cluster (C API)](examples/simple_cluster_c.c) - Using the C API bindings
+- [Simple Cluster (C API)](examples/simple_cluster_c.c) - Using C API bindings
 - [Network Example](examples/network_example.cpp) - Network layer usage example
 
-Each example demonstrates different aspects of the library usage patterns.
+Each example demonstrates different aspects of library usage.
 
 ## API Reference
 
@@ -130,21 +115,12 @@ Each example demonstrates different aspects of the library usage patterns.
 - [message_serializer](include/net/udp_transport.hpp) - Abstract message serialization interface
 - [json_serializer](include/net/json_serializer.hpp) - JSON-based message serialization implementation
 
-### Python API Classes
-
-- `gossip.GossipCore` - Main protocol implementation
-- `gossip.NodeView` - Node representation with metadata
-- `gossip.GossipMessage` - Message structure for network transport
-- `gossip.NodeId` - Node unique identifier
-- `gossip.NodeStatus` - Node status enumeration
-- `gossip.MessageType` - Message type enumeration
-
 ### C API Functions
 
 - `gossip_core_create()` - Create a new gossip core instance
-- `gossip_core_destroy()` - Destroy a gossip core instance
+- `gossip_core_destroy()` - Destroy gossip core instance
 - `gossip_core_tick()` - Drive the protocol (should be called periodically)
-- `gossip_core_handle_message()` - Process incoming messages
+- `gossip_core_handle_message()` - Handle incoming messages
 - `gossip_core_meet()` - Introduce a new node to the cluster
 - `gossip_core_join()` - Join an existing node
 - `gossip_core_leave()` - Gracefully leave the cluster
@@ -152,36 +128,22 @@ Each example demonstrates different aspects of the library usage patterns.
 ### Key Methods
 
 - `gossip_core::tick()` - Drive the protocol (should be called periodically)
-- `gossip_core::handle_message()` - Process incoming messages
+- `gossip_core::handle_message()` - Handle incoming messages
 - `gossip_core::meet()` - Introduce a new node to the cluster
 - `gossip_core::join()` - Join an existing node
 - `gossip_core::leave()` - Gracefully leave the cluster
 
-## Examples Guide
+## Example Guide
 
 Detailed examples are provided in the [examples](examples/) directory:
 
-1. **simple_cluster.cpp** - Shows basic cluster formation with full mesh connectivity
-2. **seed_cluster.cpp** - Demonstrates realistic deployment using seed nodes
-3. **advanced_cluster.cpp** - Illustrates advanced features like metadata and graceful leave
+1. **simple_cluster.cpp** - Shows basic cluster formation with full-mesh connectivity
+2. **seed_cluster.cpp** - Demonstrates real-world deployment using seed nodes
+3. **advanced_cluster.cpp** - Shows advanced features like metadata and graceful leave
 4. **simple_cluster_c.c** - Shows how to use the C API bindings
-5. **network_example.cpp** - Shows how to use the network layer with different transport protocols
+5. **network_example.cpp** - Shows how to use the network layer and different transport protocols
 
-To build and run examples:
-
-```bash
-cd build
-cmake .. -DBUILD_PYTHON_BINDINGS=ON
-cmake --build .
-./examples/simple_cluster
-./examples/seed_cluster
-./examples/advanced_cluster
-./examples/simple_cluster_c
-./examples/network_example
-python ../bindings/python/example.py
-python ../bindings/python/two_node_example.py
-python ../bindings/python/debug_example.py
-```
+Building and running examples:
 
 ```bash
 cd build
@@ -196,107 +158,60 @@ cmake --build .
 
 ## Roadmap: From Core Library to Production System
 
-libgossip-core is already a solid foundation for distributed systems. Here are the directions for future development:
+libgossip-core is already a solid foundation for distributed systems. Here's the roadmap for future development:
 
 ### 1. libgossip-net: Network Transport Layer
 The core layer is network-agnostic, now we need concrete transport implementations.
 
-✅ **UDP Implementation (lightweight, low latency)**
-- Using boost::asio or native sockets
-- Support multicast (optional) for fast discovery
-- Implement message retransmission (optional, for critical messages)
+✅ **Features:**
+- UDP transport: Lightweight unreliable transport for local networks
+- TCP transport: Reliable transport for WAN deployments
+- Serialization layer: Pluggable message serialization (JSON, FlatBuffers, Cap'n Proto)
 
-✅ **TCP Implementation (reliable, ordered)**
-- For large messages or state synchronization
-- Implement connection management
-
-✅ **Example:**
-```
-auto transport = transport_factory::create_transport(transport_type::udp, "127.0.0.1", 8000);
-transport->set_gossip_core(gossip_core);
-transport->set_serializer(std::make_unique<json_serializer>());
-transport->start();
-```
-
-### 2. Serialization Layer
-Enable gossip_message to be transmitted across different languages and platforms.
-
-✅ **Options:**
-- FlatBuffers: Zero-copy, high-performance, cross-language
-- Cap'n Proto: Similar to FlatBuffers, Google-made
-- Custom binary format: Ultra-compact, suitable for embedded systems
-
-✅ **Example:**
-```cpp
-auto buffer = serializer::pack(message);
-send(buffer.data(), buffer.size());
-
-// On receiving end
-auto msg = serializer::unpack(received_data, size);
-gossip_core.handle_message(*msg, now);
-```
-
-### 3. libgossip-cluster: Cluster Management Layer
-Build higher-level cluster functions on top of gossip-core.
+### 2. libgossip-cluster: Cluster Management
+Build higher-level cluster management abstractions.
 
 ✅ **Features:**
-- Member management: add_node, remove_node
-- Failover: When primary node goes offline, automatically elect new primary
-- Sharding routing: Key routing based on consistent hashing
-- Configuration synchronization: Propagate cluster configuration
+- Cluster formation: Automated cluster creation and bootstrap
+- Node discovery: Service discovery for cluster nodes
+- Configuration sync: Distributed configuration management
+- Leader election: Simple leader election mechanisms
 
-✅ **Can be used to build:**
-- Redis Cluster-like key-value storage
-- Distributed cache
-- Service discovery system
-
-### 4. Service Discovery
-Use libgossip as a service registry and discovery system.
-
-✅ **Extend node_view:**
-```cpp
-struct service_info {
-    std::string name;
-    std::string version;
-    std::map<std::string, std::string> tags;
-    std::map<std::string, std::string> meta;
-};
-```
-
-✅ **Usage:**
-```cpp
-// Service registration
-gossip_core.register_service("user-service", "v1.0", "region", "us-east-1");
-
-// Service discovery
-auto services = gossip_core.get_services("user-service");
-```
-
-This is similar to the core functionality of Consul.
-
-### 5. Configuration Management and Distribution
-Use Gossip's anti-entropy feature to distribute configuration.
-
-✅ **Scenarios:**
-- Dynamic log level updates
-- Feature toggles
-- Hot updates of algorithm parameters
-
-✅ **Advantages:**
-- No central configuration server
-- High availability, eventual consistency
-
-### 6. Monitoring and Observability
-Provide operational support for production environments.
+### 3. libgossip-utils: Utility Functions
+Provide utility functions for common distributed system tasks.
 
 ✅ **Features:**
-- Metrics: Expose Prometheus metrics
-  - gossip_nodes_count
-  - gossip_messages_sent_total
-  - gossip_messages_received_total
-  - gossip_network_latency_ms
-- Tracing: Integrate with OpenTelemetry
-- Logging: Structured log output
+- Time synchronization: Clock synchronization across nodes
+- Load balancing: Distribute workload across cluster
+- Consistent hashing: Key distribution for sharding
+- Rate limiting: Control message flow in high-load scenarios
+
+### 4. libgossip-monitoring: Monitoring and Observability
+Provide monitoring and observability features for production deployments.
+
+✅ **Features:**
+- Metrics collection: Collect and expose system metrics
+- Health checks: Node and cluster health monitoring
+- Logging: Structured logging with different levels
+- Tracing: Distributed tracing for request flows
+
+### 5. Testing and Benchmarking
+Ensure reliability and performance through comprehensive testing.
+
+✅ **Features:**
+- Unit tests: Comprehensive unit test coverage
+- Integration tests: End-to-end integration testing
+- Performance benchmarks: Regular performance regression testing
+- Chaos engineering: Fault injection for resilience testing
+
+### 6. Documentation and Tutorials
+Create comprehensive documentation and learning resources.
+
+✅ **Features:**
+- API documentation: Complete API reference with examples
+- User guides: Step-by-step guides for common use cases
+- Architecture docs: Deep dive into system architecture
+- Video tutorials: Visual learning resources
 
 ### 7. Security Layer
 Provide security guarantees for production environments.
@@ -325,6 +240,59 @@ Port libgossip to more platforms.
 ### 10. Open Source and Community Building
 Share your achievements with the world.
 
+## Code Coverage
+
+This project includes code coverage analysis tools to help ensure quality and thorough testing.
+
+### Generating Coverage Reports
+
+To generate a code coverage report:
+
+1. Configure with coverage enabled:
+   ```bash
+   mkdir build
+   cd build
+   cmake .. -DENABLE_COVERAGE=ON
+   ```
+
+2. Build the project:
+   ```bash
+   cmake --build .
+   ```
+
+3. Run tests:
+   ```bash
+   ctest -V
+   ```
+
+4. Generate coverage report:
+   ```bash
+   ninja coverage  # For Ninja builds
+   # or
+   make coverage   # For Make builds
+   ```
+
+5. View the HTML report by opening `build/coverage_report_filtered/index.html` in your browser.
+
+### Using the Coverage Script
+
+Alternatively, you can use the provided Python script to generate a filtered coverage report:
+
+```bash
+python script/generate_coverage.py --build-dir build
+```
+
+This script will generate a report that excludes system libraries, third-party code, and Google Test framework code, 
+focusing only on the actual project code.
+
+### Coverage Goals
+
+The project aims for:
+- Line coverage: >90%
+- Function coverage: >90%
+
+Current status: 97.5% line coverage, 97.5% function coverage (as of latest test run).
+
 ## Python Bindings
 
 libgossip also provides Python bindings for easy integration with Python applications.
@@ -346,326 +314,29 @@ cmake --build .
 
 ### Using Python Bindings
 
+Example Python usage:
+
 ```python
-import gossip
+import libgossip
 
-# Create a node view for ourself
-self_node = gossip.NodeView()
-self_node.ip = "127.0.0.1"
-self_node.port = 7000
-self_node.status = gossip.NodeStatus.ONLINE
+# Create a node view
+node = libgossip.node_view()
+node.ip = "127.0.0.1"
+node.port = 8000
 
-# Define callbacks
-def send_callback(msg, target):
-    print(f"Sending message of type {msg.type} to {target.ip}:{target.port}")
+# Create a gossip core instance
+core = libgossip.gossip_core(node)
 
-def event_callback(node, old_status):
-    print(f"Node {node.ip}:{node.port} changed from {old_status} to {node.status}")
-
-# Initialize gossip core
-core = gossip.GossipCore(self_node, send_callback, event_callback)
-
-# Meet another node
-other_node = gossip.NodeView()
-other_node.ip = "127.0.0.1"
-other_node.port = 7001
-other_node.status = gossip.NodeStatus.JOINING
-
-core.meet(other_node)
-
-# Run gossip protocol
-for i in range(5):
-    core.tick()
-    time.sleep(0.1)
+# Drive the protocol periodically
+core.tick()
 ```
 
-See [bindings/python/example.py](bindings/python/example.py) for a complete example.
+For more detailed examples, see the [Python examples](bindings/python/examples/) directory.
 
-<!-- 中文版本 -->
-<a id="中文版本"></a>
-# libgossip
+## Contributing
 
-libgossip是一个使用C++17实现的Gossip协议库，专为去中心化的分布式系统而设计。它提供了强大的节点发现、故障检测和元数据传播功能，注重可靠性和性能。
+Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) before submitting pull requests.
 
-## 功能特性
+## License
 
-- **Gossip协议核心**：实现了SWIM（可扩展的弱一致性感染式进程组成员协议）用于去中心化的节点成员管理
-- **故障检测**：使用心跳机制和怀疑超时机制高效检测节点故障
-- **元数据传播**：使用反熵gossip在集群中分发节点元数据
-- **事件系统**：在节点状态变化和元数据更新时通知应用程序
-- **模块化设计**：将核心协议实现与网络传输层分离
-- **C API**：为非C++应用程序提供C语言绑定
-
-## 安装和集成
-
-### 先决条件
-
-- C++17兼容编译器（GCC 7+，Clang 5+，MSVC 2017+）
-- CMake 3.12+
-
-### 从源码构建
-
-```
-git clone https://github.com/caomengxuan666/libgossip.git
-cd libgossip
-mkdir build
-cd build
-cmake ..
-cmake --build .
-```
-
-### 与CMake集成
-
-有两种方式将libgossip集成到您的项目中：
-
-1. 使用find_package（安装后）：
-
-```
-find_package(libgossip REQUIRED)
-target_link_libraries(your_target libgossip::core)
-# For network functionality:
-target_link_libraries(your_target libgossip::network)
-```
-
-2. 使用add_subdirectory（无需安装）：
-
-```
-add_subdirectory(path/to/libgossip)
-target_link_libraries(your_target libgossip::core)
-# For network functionality:
-target_link_libraries(your_target libgossip::network)
-```
-
-### 安装
-
-要将libgossip安装到系统中：
-
-```
-mkdir build
-cd build
-cmake ..
-cmake --build .
-sudo cmake --install .
-```
-
-## 模块
-
-### 核心模块
-
-核心模块实现了Gossip协议逻辑，包括成员管理、故障检测和元数据传播。
-
-- [gossip_core](include/core/gossip_core.hpp) - 主协议实现
-- [node_view](include/core/gossip_core.hpp) - 带元数据的节点表示
-- [gossip_message](include/core/gossip_core.hpp) - 用于网络传输的消息结构
-
-### 网络模块
-
-网络模块为Gossip协议提供传输层实现。
-
-- [传输接口](include/net/udp_transport.hpp) - 抽象传输接口
-- [UDP传输](include/net/udp_transport.hpp) - 基于ASIO的UDP传输实现
-- [TCP传输](include/net/tcp_transport.hpp) - 基于TCP的可靠传输实现
-- [传输工厂](include/net/transport_factory.hpp) - 用于创建传输实例的工厂
-- [消息序列化器](include/net/udp_transport.hpp) - 抽象消息序列化接口
-- [JSON序列化器](include/net/json_serializer.hpp) - 基于JSON的消息序列化实现
-
-## 使用示例
-
-请参阅[examples](examples/)目录获取详细的使用示例：
-
-- [Simple Cluster](examples/simple_cluster.cpp) - 基础全网格集群设置
-- [Seed-based Cluster](examples/seed_cluster.cpp) - 使用种子节点的真实部署
-- [Advanced Cluster](examples/advanced_cluster.cpp) - 高级功能包括元数据和优雅离开
-- [Simple Cluster (C API)](examples/simple_cluster_c.c) - 使用C API绑定
-- [Network Example](examples/network_example.cpp) - 网络层使用示例
-
-每个示例都演示了库使用的不同方面。
-
-## API参考
-
-### 核心类
-
-- [gossip_core](include/core/gossip_core.hpp) - 主协议实现
-- [node_view](include/core/gossip_core.hpp) - 带元数据的节点表示
-- [gossip_message](include/core/gossip_core.hpp) - 用于网络传输的消息结构
-
-### 网络类
-
-- [transport](include/net/udp_transport.hpp) - 抽象传输接口
-- [udp_transport](include/net/udp_transport.hpp) - 基于UDP的传输实现
-- [tcp_transport](include/net/tcp_transport.hpp) - 基于TCP的传输实现
-- [transport_factory](include/net/transport_factory.hpp) - 用于创建传输实例的工厂
-- [message_serializer](include/net/udp_transport.hpp) - 抽象消息序列化接口
-- [json_serializer](include/net/json_serializer.hpp) - 基于JSON的消息序列化实现
-
-### C API函数
-
-- `gossip_core_create()` - 创建一个新的gossip核心实例
-- `gossip_core_destroy()` - 销毁gossip核心实例
-- `gossip_core_tick()` - 驱动协议（应定期调用）
-- `gossip_core_handle_message()` - 处理传入消息
-- `gossip_core_meet()` - 将新节点引入集群
-- `gossip_core_join()` - 加入现有节点
-- `gossip_core_leave()` - 优雅地离开集群
-
-### 关键方法
-
-- `gossip_core::tick()` - 驱动协议（应定期调用）
-- `gossip_core::handle_message()` - 处理传入消息
-- `gossip_core::meet()` - 将新节点引入集群
-- `gossip_core::join()` - 加入现有节点
-- `gossip_core::leave()` - 优雅地离开集群
-
-## 示例指南
-
-详细示例在[examples](examples/)目录中提供：
-
-1. **simple_cluster.cpp** - 展示具有全网格连接的基本集群形成
-2. **seed_cluster.cpp** - 演示使用种子节点的真实部署
-3. **advanced_cluster.cpp** - 展示高级功能如元数据和优雅离开
-4. **simple_cluster_c.c** - 展示如何使用C API绑定
-5. **network_example.cpp** - 展示如何使用网络层和不同传输协议
-
-构建和运行示例：
-
-```
-cd build
-cmake ..
-cmake --build .
-./examples/simple_cluster
-./examples/seed_cluster
-./examples/advanced_cluster
-./examples/simple_cluster_c
-./examples/network_example
-```
-
-## 发展路线图：从核心库到生产系统
-
-libgossip-core已经是分布式系统的坚实基础。以下是未来的发展方向：
-
-### 1. libgossip-net：网络传输层
-核心层是网络无关的，现在我们需要具体的传输实现。
-
-✅ **UDP实现（轻量、低延迟）**
-- 使用boost::asio或原生socket
-- 支持多播（可选）用于快速发现
-- 实现消息重传（可选，用于关键消息）
-
-✅ **TCP实现（可靠、有序）**
-- 用于大消息或状态同步
-- 实现连接管理
-
-✅ **示例：**
-```
-auto transport = transport_factory::create_transport(transport_type::udp, "127.0.0.1", 8000);
-transport->set_gossip_core(gossip_core);
-transport->set_serializer(std::make_unique<json_serializer>());
-transport->start();
-```
-
-### 2. 实现序列化层（Serialization）
-让gossip_message能在不同语言、平台间传输。
-
-✅ **方案选择：**
-- FlatBuffers：零拷贝，高性能，跨语言
-- Cap'n Proto：类似FlatBuffers，Google出品
-- 自定义二进制格式：极致紧凑，适合嵌入式
-
-✅ **示例：**
-```
-auto buffer = serializer::pack(message);
-send(buffer.data(), buffer.size());
-
-// 接收端
-auto msg = serializer::unpack(received_data, size);
-gossip_core.handle_message(*msg, now);
-```
-
-### 3. 构建libgossip-cluster：集群管理层
-在gossip-core之上，构建更高级的集群功能。
-
-✅ **功能：**
-- 成员管理：add_node, remove_node
-- 故障转移：当主节点下线，自动选举新主
-- 分片路由：基于一致性哈希的键路由
-- 配置同步：传播集群配置
-
-✅ **可用于构建：**
-- 类Redis Cluster的键值存储
-- 分布式缓存
-- 服务发现系统
-
-### 4. 实现服务发现（Service Discovery）
-将libgossip用作服务注册与发现。
-
-✅ **扩展node_view：**
-```
-struct service_info {
-    std::string name;
-    std::string version;
-    std::map<std::string, std::string> tags;
-    std::map<std::string, std::string> meta;
-};
-```
-
-✅ **用法：**
-```
-// 服务注册
-gossip_core.register_service("user-service", "v1.0", "region", "us-east-1");
-
-// 服务发现
-auto services = gossip_core.get_services("user-service");
-```
-
-这类似于Consul的核心功能。
-
-### 5. 实现配置管理与发布
-利用Gossip的反熵特性，分发配置。
-
-✅ **场景：**
-- 动态更新日志级别
-- 开关功能（Feature Toggle）
-- 算法参数热更新
-
-✅ **优势：**
-- 无中心配置服务器
-- 高可用、最终一致
-
-### 6. 实现监控与可观测性
-为生产环境提供运维支持。
-
-✅ **功能：**
-- Metrics：暴露Prometheus指标
-  - gossip_nodes_count
-  - gossip_messages_sent_total
-  - gossip_messages_received_total
-  - gossip_network_latency_ms
-- Tracing：集成OpenTelemetry
-- Logging：结构化日志输出
-
-### 7. 实现安全层（Security）
-为生产环境提供安全保障。
-
-✅ **功能：**
-- TLS加密：保护传输安全
-- 节点认证：基于证书或共享密钥
-- 消息签名：防止伪造
-
-### 8. 构建上层应用
-用libgossip构建真实分布式系统。
-
-✅ **项目构想：**
-- Astra-CacheServer：分布式缓存,未来用libgossip重构这个项目的集群模块
-- gossip-job：分布式任务调度，确保任务只被一个节点执行
-- gossip-raft：在Gossip基础上实现Raft协议，用于强一致性
-
-### 9. 跨平台与嵌入式
-将libgossip移植到更多平台。
-
-✅ **目标平台：**
-- 嵌入式Linux（IoT设备）
-- WebAssembly（浏览器内节点发现）
-- 移动设备（Android/iOS P2P网络）
-
-### 10. 开源与社区建设
-将我们的成果分享给世界。
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

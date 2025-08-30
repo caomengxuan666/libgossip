@@ -3,37 +3,51 @@
 // Include the core implementation directly when building the Python module
 #include "../../src/core/gossip_c.cpp"
 #include "../../src/core/gossip_core.cpp"
+#include "../../src/net/udp_transport.cpp"
+#include "../../src/net/tcp_transport.cpp"
+#include "../../src/net/transport_factory.cpp"
 #endif
 
-#include <ostream>
-#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/functional.h>
+#include <memory>
+#include <string>
+#include <vector>
+#include <ostream>
 #include <sstream>
-// When building with CMake, use installed headers
-#ifdef LIBGOSSIP_BUILD
-#include "core/gossip_core.h"
-#include "core/gossip_core.hpp"
 #include <iomanip>
 #include <random>
+
+// When building with CMake, use installed headers
+#ifdef LIBGOSSIP_BUILD
+#include "core/gossip_core.hpp"
+#include "net/udp_transport.hpp"
+#include "net/tcp_transport.hpp"
+#include "net/json_serializer.hpp"
+#include "net/transport_factory.hpp"
 #else
 // When building with setup.py, use relative paths
-#include "../../include/core/gossip_core.h"
 #include "../../include/core/gossip_core.hpp"
+#include "../../include/net/udp_transport.hpp"
+#include "../../include/net/tcp_transport.hpp"
+#include "../../include/net/json_serializer.hpp"
+#include "../../include/net/transport_factory.hpp"
 #endif
 
 namespace py = pybind11;
 using namespace libgossip;
+using namespace gossip::net;
 
 // Helper function to generate a random node ID
 libgossip::node_id_t generate_random_node_id() {
     libgossip::node_id_t id;
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dis(0, 255);
+    std::uniform_int_distribution<unsigned char> dis(0, 255);
 
     for (auto &byte: id) {
-        byte = static_cast<uint8_t>(dis(gen));
+        byte = dis(gen);
     }
     return id;
 }
@@ -119,8 +133,8 @@ PYBIND11_MODULE(libgossip_py, m) {
             .def_readwrite("received_messages", &libgossip::gossip_stats::received_messages)
             .def_readwrite("last_tick_duration", &libgossip::gossip_stats::last_tick_duration);
 
-    // Bindings for gossip_core
-    py::class_<libgossip::gossip_core>(m, "GossipCore")
+    // Bindings for gossip_core with shared_ptr for proper memory management
+    py::class_<libgossip::gossip_core, std::shared_ptr<libgossip::gossip_core>>(m, "GossipCore")
             .def(py::init<const libgossip::node_view &, libgossip::send_callback, libgossip::event_callback>())
             .def("tick", &libgossip::gossip_core::tick)
             .def("tick_full_broadcast", &libgossip::gossip_core::tick_full_broadcast)
@@ -137,4 +151,75 @@ PYBIND11_MODULE(libgossip_py, m) {
             .def("cleanup_expired", &libgossip::gossip_core::cleanup_expired)
             .def("reset", &libgossip::gossip_core::reset)
             .def("get_stats", &libgossip::gossip_core::get_stats);
+
+    // Network module bindings
+
+    // Bindings for error_code enum
+    py::enum_<gossip::net::error_code>(m, "ErrorCode")
+            .value("SUCCESS", gossip::net::error_code::success)
+            .value("NETWORK_ERROR", gossip::net::error_code::network_error)
+            .value("SERIALIZATION_ERROR", gossip::net::error_code::serialization_error)
+            .value("INVALID_ARGUMENT", gossip::net::error_code::invalid_argument)
+            .value("OPERATION_NOT_PERMITTED", gossip::net::error_code::operation_not_permitted)
+            .export_values();
+
+    // Bindings for transport_type enum
+    py::enum_<gossip::net::transport_type>(m, "TransportType")
+            .value("UDP", gossip::net::transport_type::udp)
+            .value("TCP", gossip::net::transport_type::tcp)
+            .export_values();
+
+    // Bindings for message_serializer abstract class
+    py::class_<gossip::net::message_serializer, py::smart_holder>(m, "MessageSerializer");
+
+    // Bindings for json_serializer
+    py::class_<gossip::net::json_serializer, gossip::net::message_serializer, py::smart_holder>(m, "JsonSerializer")
+            .def(py::init<>())
+            .def("serialize", [](const gossip::net::json_serializer &self, const libgossip::gossip_message &msg) {
+                std::vector<uint8_t> data;
+                gossip::net::error_code ec = self.serialize(msg, data);
+                return std::make_pair(ec, data);
+            })
+            .def("deserialize", [](const gossip::net::json_serializer &self, const std::vector<uint8_t> &data) {
+                libgossip::gossip_message msg;
+                gossip::net::error_code ec = self.deserialize(data, msg);
+                return std::make_pair(ec, msg);
+            });
+
+    // Bindings for transport abstract class
+    py::class_<gossip::net::transport, std::shared_ptr<gossip::net::transport>>(m, "Transport")
+            .def("start", &gossip::net::transport::start)
+            .def("stop", &gossip::net::transport::stop)
+            .def("send_message", &gossip::net::transport::send_message)
+            .def("send_message_async", &gossip::net::transport::send_message_async)
+            .def("set_gossip_core", &gossip::net::transport::set_gossip_core)
+            .def("set_serializer", &gossip::net::transport::set_serializer);
+
+    // Bindings for udp_transport
+    py::class_<gossip::net::udp_transport, std::shared_ptr<gossip::net::udp_transport>, gossip::net::transport>(m, "UdpTransport")
+            .def(py::init<const std::string &, uint16_t>())
+            .def("start", &gossip::net::udp_transport::start)
+            .def("stop", &gossip::net::udp_transport::stop)
+            .def("send_message", &gossip::net::udp_transport::send_message)
+            .def("send_message_async", &gossip::net::udp_transport::send_message_async)
+            .def("set_gossip_core", &gossip::net::udp_transport::set_gossip_core)
+            .def("set_serializer", &gossip::net::udp_transport::set_serializer);
+
+    // Bindings for tcp_transport
+    py::class_<gossip::net::tcp_transport, std::shared_ptr<gossip::net::tcp_transport>, gossip::net::transport>(m, "TcpTransport")
+            .def(py::init<const std::string &, uint16_t>())
+            .def("start", &gossip::net::tcp_transport::start)
+            .def("stop", &gossip::net::tcp_transport::stop)
+            .def("send_message", &gossip::net::tcp_transport::send_message)
+            .def("send_message_async", &gossip::net::tcp_transport::send_message_async)
+            .def("set_gossip_core", &gossip::net::tcp_transport::set_gossip_core)
+            .def("set_serializer", &gossip::net::tcp_transport::set_serializer);
+
+    // Bindings for transport_factory
+    py::class_<gossip::net::transport_factory>(m, "TransportFactory")
+            .def_static("create_transport", [](gossip::net::transport_type type, const std::string &host, uint16_t port) { 
+                std::unique_ptr<gossip::net::transport> transport = gossip::net::transport_factory::create_transport(type, host, port);
+                std::shared_ptr<gossip::net::transport> shared_transport(std::move(transport));
+                return shared_transport;
+            }, py::return_value_policy::take_ownership);
 }

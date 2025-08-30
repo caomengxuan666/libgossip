@@ -15,6 +15,7 @@ portfile.cmake
 *.pyd
 __pycache__/
 bindings/python/libgossip.egg-info/
+bindings/python/dist/
 *.whl
 *.o
 *.so
