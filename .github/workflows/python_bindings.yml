@@ -35,7 +35,7 @@ jobs:
       - name: Install Python build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine pybind11==2.13.6
+          pip install build twine
 
       - name: Debug information
         shell: bash
@@ -61,6 +61,7 @@ jobs:
           CIBW_ENVIRONMENT: >
             ASIO_STANDALONE=1
             ASIO_NO_TYPEID=1
+          CIBW_DEPENDENCY_CONSTRAINTS: none
 
       - name: Check wheel metadata
         run: |
@@ -96,7 +97,7 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine pybind11==2.13.6
+          pip install build twine
 
       - name: Debug information
         run: |
@@ -152,14 +153,15 @@ jobs:
 
       - name: Publish to Test PyPI
         run: |
-          twine upload --verbose --repository-url https://test.pypi.org/legacy/ dist/*
+          twine upload --verbose --repository-url https://test.pypi.org/legacy/   dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          
       - name: Publish to PyPI
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          twine upload --verbose --repository-url https://upload.pypi.org/legacy/ dist/*
+          twine upload --verbose --repository-url https://upload.pypi.org/legacy/   dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
