@@ -1,4 +1,4 @@
-d# libgossip
+# libgossip
 
 ## Language Index
 
