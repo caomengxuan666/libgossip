@@ -15,10 +15,10 @@ using namespace libgossip;
 struct gossip_core_wrapper;
 
 // Forward declarations of conversion functions from gossip_c.cpp
-libgossip::node_id_t to_cpp_node_id(const gossip_node_id_t *c_node_id);
-libgossip::node_view to_cpp_node_view(const gossip_node_view_t *c_node_view);
-gossip_node_id_t to_c_node_id(const libgossip::node_id_t &cpp_node_id);
-gossip_node_view_t to_c_node_view(const libgossip::node_view &cpp_node_view);
+LIBGOSSIP_API libgossip::node_id_t to_cpp_node_id(const gossip_node_id_t *c_node_id);
+LIBGOSSIP_API libgossip::node_view to_cpp_node_view(const gossip_node_view_t *c_node_view);
+LIBGOSSIP_API gossip_node_id_t to_c_node_id(const libgossip::node_id_t &cpp_node_id);
+LIBGOSSIP_API gossip_node_view_t to_c_node_view(const libgossip::node_view &cpp_node_view);
 
 // Internal wrapper for C serializer
 struct gossip_serializer_wrapper {

@@ -13,21 +13,21 @@ struct gossip_core_wrapper {
 };
 
 // Convert C node_id to C++ node_id
-libgossip::node_id_t to_cpp_node_id(const gossip_node_id_t *c_node_id) {
+LIBGOSSIP_API libgossip::node_id_t to_cpp_node_id(const gossip_node_id_t *c_node_id) {
     libgossip::node_id_t cpp_node_id;
     std::memcpy(cpp_node_id.data(), c_node_id->data, 16);
     return cpp_node_id;
 }
 
 // Convert C++ node_id to C node_id
-gossip_node_id_t to_c_node_id(const libgossip::node_id_t &cpp_node_id) {
+LIBGOSSIP_API gossip_node_id_t to_c_node_id(const libgossip::node_id_t &cpp_node_id) {
     gossip_node_id_t c_node_id;
     std::memcpy(c_node_id.data, cpp_node_id.data(), 16);
     return c_node_id;
 }
 
 // Convert C node_view to C++ node_view
-libgossip::node_view to_cpp_node_view(const gossip_node_view_t *c_node_view) {
+LIBGOSSIP_API libgossip::node_view to_cpp_node_view(const gossip_node_view_t *c_node_view) {
     libgossip::node_view cpp_node_view;
     cpp_node_view.id = to_cpp_node_id(&c_node_view->id);
     cpp_node_view.ip = std::string(c_node_view->ip);
@@ -43,7 +43,7 @@ libgossip::node_view to_cpp_node_view(const gossip_node_view_t *c_node_view) {
 }
 
 // Convert C++ node_view to C node_view
-gossip_node_view_t to_c_node_view(const libgossip::node_view &cpp_node_view) {
+LIBGOSSIP_API gossip_node_view_t to_c_node_view(const libgossip::node_view &cpp_node_view) {
     gossip_node_view_t c_node_view = {0};
     c_node_view.id = to_c_node_id(cpp_node_view.id);
     std::strncpy(c_node_view.ip, cpp_node_view.ip.c_str(), sizeof(c_node_view.ip) - 1);
@@ -61,7 +61,7 @@ gossip_node_view_t to_c_node_view(const libgossip::node_view &cpp_node_view) {
 }
 
 // Convert C message to C++ message
-libgossip::gossip_message to_cpp_message(const gossip_message_t *c_msg) {
+LIBGOSSIP_API libgossip::gossip_message to_cpp_message(const gossip_message_t *c_msg) {
     libgossip::gossip_message cpp_msg;
     cpp_msg.sender = to_cpp_node_id(&c_msg->sender);
     cpp_msg.type = static_cast<libgossip::message_type>(c_msg->type);
@@ -76,7 +76,7 @@ libgossip::gossip_message to_cpp_message(const gossip_message_t *c_msg) {
 }
 
 // Convert C++ message to C message
-gossip_message_t to_c_message(const libgossip::gossip_message &cpp_msg) {
+LIBGOSSIP_API gossip_message_t to_c_message(const libgossip::gossip_message &cpp_msg) {
     gossip_message_t c_msg = {0};
     c_msg.sender = to_c_node_id(cpp_msg.sender);
     c_msg.type = static_cast<gossip_message_type_t>(cpp_msg.type);
@@ -94,7 +94,7 @@ gossip_message_t to_c_message(const libgossip::gossip_message &cpp_msg) {
 }
 
 // Free C message resources
-void free_c_message(gossip_message_t *c_msg) {
+LIBGOSSIP_API void free_c_message(gossip_message_t *c_msg) {
     if (c_msg->entries) {
         std::free(c_msg->entries);
         c_msg->entries = nullptr;
