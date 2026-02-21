@@ -45,6 +45,8 @@ namespace libgossip {
     }
 
     void gossip_core::tick() {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         auto start_time = clock::now();
         self_.seen_time = start_time;
 
@@ -104,6 +106,8 @@ namespace libgossip {
     }
 
     void gossip_core::tick_full_broadcast() {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         self_.seen_time = clock::now();
 
         // Send ping message to all online nodes
@@ -131,6 +135,8 @@ namespace libgossip {
     }
 
     void gossip_core::handle_message(const gossip_message &msg, time_point recv_time) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         received_messages_++;
         node_view *sender = nullptr;
 
@@ -208,6 +214,8 @@ namespace libgossip {
 
 
     void gossip_core::meet(const node_view &node) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         if (node.id == self_.id) {
             return;
         }
@@ -234,6 +242,8 @@ namespace libgossip {
     }
 
     void gossip_core::join(const node_view &node) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         if (node.id == self_.id) {
             return;
         }
@@ -260,6 +270,8 @@ namespace libgossip {
     }
 
     void gossip_core::leave(const node_id_t &node_id) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         auto it = std::find_if(nodes_.begin(), nodes_.end(),
                                [&node_id](const node_view &n) { return n.id == node_id; });
         if (it != nodes_.end()) {
@@ -287,6 +299,8 @@ namespace libgossip {
 
 
     std::vector<node_view> gossip_core::get_nodes() const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         std::vector<node_view> result;
         result.reserve(nodes_.size());
         for (const auto &node: nodes_) {
@@ -296,6 +310,8 @@ namespace libgossip {
     }
 
     std::optional<node_view> gossip_core::find_node(const node_id_t &id) const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         if (id == self_.id) {
             return self_;
         }
@@ -380,6 +396,8 @@ namespace libgossip {
     }
 
     void gossip_core::cleanup_expired(duration_ms timeout) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         auto now = clock::now();
         auto expired = [timeout, now](const node_view &n) {
             return (n.status != node_status::online) &&
@@ -389,6 +407,8 @@ namespace libgossip {
     }
 
     void gossip_core::reset() {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         nodes_.clear();
         self_.heartbeat = 1;
         self_.version = 0;
@@ -398,6 +418,8 @@ namespace libgossip {
     }
 
     gossip_stats gossip_core::get_stats() const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
         gossip_stats stats;
         stats.known_nodes = nodes_.size();
         stats.sent_messages = sent_messages_;

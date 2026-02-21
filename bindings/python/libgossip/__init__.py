@@ -59,6 +59,26 @@ MessageType = MessageType
 TransportType = TransportType
 ErrorCode = ErrorCode
 
+# Error code string conversion
+def error_code_to_string(error_code):
+    """
+    Convert ErrorCode enum to readable string name
+
+    Args:
+        error_code (ErrorCode): The error code to convert
+
+    Returns:
+        str: String representation of the error code
+    """
+    error_names = {
+        ErrorCode.SUCCESS: "success",
+        ErrorCode.NETWORK_ERROR: "network_error",
+        ErrorCode.SERIALIZATION_ERROR: "serialization_error",
+        ErrorCode.INVALID_ARGUMENT: "invalid_argument",
+        ErrorCode.OPERATION_NOT_PERMITTED: "operation_not_permitted"
+    }
+    return error_names.get(error_code, f"unknown({error_code})")
+
 # High-level SDK classes
 class GossipNode:
     """

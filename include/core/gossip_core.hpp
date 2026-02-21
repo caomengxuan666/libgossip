@@ -54,6 +54,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
@@ -223,11 +224,11 @@ namespace libgossip {
         /// Destructor
         ~gossip_core() = default;
 
-        // Disable copy, enable move
+        // Disable copy and move
         gossip_core(const gossip_core &) = delete;
         gossip_core &operator=(const gossip_core &) = delete;
-        gossip_core(gossip_core &&) noexcept = default;
-        gossip_core &operator=(gossip_core &&) noexcept = default;
+        gossip_core(gossip_core &&) noexcept = delete;
+        gossip_core &operator=(gossip_core &&) noexcept = delete;
 
     public:
         // ---------------------------------------------------------
@@ -306,6 +307,9 @@ namespace libgossip {
         // Statistics
         size_t sent_messages_ = 0;
         size_t received_messages_ = 0;
+
+        // Thread safety
+        mutable std::mutex mutex_;
     };
 
 }// namespace libgossip

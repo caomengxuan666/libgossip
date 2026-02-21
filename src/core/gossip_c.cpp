@@ -214,7 +214,7 @@ void gossip_core_leave(gossip_core_t *core, const gossip_node_id_t *node_id) {
     }
 }
 
-const gossip_node_view_t *gossip_core_self(const gossip_core_t *core) {
+gossip_node_view_t *gossip_core_self(const gossip_core_t *core) {
     if (!core) {
         return nullptr;
     }
@@ -222,11 +222,20 @@ const gossip_node_view_t *gossip_core_self(const gossip_core_t *core) {
     gossip_core_wrapper *wrapper = const_cast<gossip_core_wrapper *>(
             (const gossip_core_wrapper *) core);
 
-    // We need to be careful here - we're returning a pointer to a temporary
-    // In a real implementation, we'd want to manage this more carefully
-    static gossip_node_view_t static_self_view;
-    static_self_view = to_c_node_view(wrapper->core->self());
-    return &static_self_view;
+    // Allocate memory on heap - caller must free using gossip_core_free_self()
+    gossip_node_view_t *self_view = (gossip_node_view_t *) std::malloc(sizeof(gossip_node_view_t));
+    if (!self_view) {
+        return nullptr;
+    }
+    
+    *self_view = to_c_node_view(wrapper->core->self());
+    return self_view;
+}
+
+void gossip_core_free_self(gossip_node_view_t *self_view) {
+    if (self_view) {
+        std::free(self_view);
+    }
 }
 
 gossip_node_view_t *gossip_core_get_nodes(const gossip_core_t *core, size_t *count) {

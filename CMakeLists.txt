@@ -2,26 +2,58 @@ cmake_minimum_required(VERSION 3.15)
 project(
   libgossip
   VERSION 1.1.2
-  LANGUAGES CXX C)
+  LANGUAGES CXX C
+  DESCRIPTION "A production-ready C++ Gossip protocol library for distributed systems"
+  HOMEPAGE_URL "https://github.com/caomengxuan666/libgossip"
+)
 
+# ============================================
+# VCPKG Compatibility Check
+# ============================================
+if(DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg")
+    set(LIBGOSSIP_VCPKG_MODE ON)
+    message(STATUS "libgossip: Running in VCPKG mode")
+    
+    # In VCPKG mode, prefer system dependencies over bundled ones
+    option(LIBGOSSIP_USE_BUNDLED_DEPS "Use bundled dependencies instead of system ones" OFF)
+else()
+    set(LIBGOSSIP_VCPKG_MODE OFF)
+    option(LIBGOSSIP_USE_BUNDLED_DEPS "Use bundled dependencies instead of system ones" ON)
+endif()
+
+# ============================================
+# Compiler Requirements
+# ============================================
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Enable position independent code for shared libraries
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Include our custom dependency management module
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-# Options
+# ============================================
+# Build Options
+# ============================================
 option(BUILD_EXAMPLES "Build example applications" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
 option(BUILD_TESTS "Build unit tests" ON)
 option(ENABLE_COVERAGE "Enable code coverage reporting" ON)
+option(LIBGOSSIP_ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+option(LIBGOSSIP_ENABLE_INSTALL "Enable installation targets" ON)
 
-# Load dependency management functions
+# ============================================
+# Include custom modules
+# ============================================
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# ============================================
+# Load dependency management
+# ============================================
 include(FindDependencies)
 
+# ============================================
+# Include directories
+# ============================================
 include_directories(third_party)
 
 set(LIBGOSSIP_CORE_SRC src/core/gossip_core.cpp src/core/gossip_c.cpp
@@ -31,10 +63,14 @@ set(LIBGOSSIP_CORE_SRC src/core/gossip_core.cpp src/core/gossip_c.cpp
 add_library(libgossip ${LIBGOSSIP_CORE_SRC})
 add_library(libgossip::core ALIAS libgossip)
 
+# ============================================
 # Handle ASIO dependency
+# ============================================
 setup_bundled_asio()
 
+# ============================================
 # Network library
+# ============================================
 set(LIBGOSSIP_NET_SRC
     src/net/udp_transport.cpp src/net/tcp_transport.cpp
     src/net/transport_factory.cpp src/net/gossip_net_c.cpp
@@ -43,34 +79,86 @@ set(LIBGOSSIP_NET_SRC
 add_library(libgossip_net ${LIBGOSSIP_NET_SRC})
 add_library(libgossip::network ALIAS libgossip_net)
 
-# Find and link ASIO
+# ============================================
+# ASIO dependency
+# ============================================
 if(ASIO_FOUND)
-  target_include_directories(
-    libgossip_net PUBLIC $<BUILD_INTERFACE:${ASIO_INCLUDE_DIR}>
-                         $<INSTALL_INTERFACE:include>)
+    target_include_directories(
+        libgossip_net PUBLIC $<BUILD_INTERFACE:${ASIO_INCLUDE_DIR}>
+                             $<INSTALL_INTERFACE:include>)
 else()
-  message(FATAL_ERROR "ASIO is required for the network library")
+    message(FATAL_ERROR 
+        "ASIO is required for the network library but was not found.\n"
+        "Please ensure ASIO is installed or use bundled dependencies.")
+endif()
+
+# ============================================
+# nlohmann/json dependency
+# ============================================
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/json/single_include/nlohmann)
+    target_include_directories(libgossip_net PUBLIC 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/json/single_include>)
+elseif(NOT LIBGOSSIP_VCPKG_MODE)
+    message(FATAL_ERROR 
+        "nlohmann/json not found in third_party/json.\n"
+        "Please run: cd third_party && git clone --depth 1 --branch v3.11.2 https://github.com/nlohmann/json.git\n"
+        "Or install nlohmann-json via your package manager.")
+else()
+    message(FATAL_ERROR 
+        "nlohmann/json not found.\n"
+        "In VCPKG mode, please ensure nlohmann-json is installed via vcpkg.")
 endif()
 
 target_link_libraries(libgossip_net PUBLIC libgossip)
 
+# ============================================
+# Compiler-specific options
+# ============================================
 if(MSVC)
-  target_compile_options(libgossip PRIVATE /utf-8)
-  target_compile_options(libgossip_net PRIVATE /utf-8)
+    target_compile_options(libgossip PRIVATE /utf-8 /W4)
+    target_compile_options(libgossip_net PRIVATE /utf-8 /W4)
+    
+    if(LIBGOSSIP_ENABLE_WARNINGS_AS_ERRORS)
+        target_compile_options(libgossip PRIVATE /WX)
+        target_compile_options(libgossip_net PRIVATE /WX)
+    endif()
+else()
+    target_compile_options(libgossip PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(libgossip_net PRIVATE -Wall -Wextra -Wpedantic)
+    
+    if(LIBGOSSIP_ENABLE_WARNINGS_AS_ERRORS)
+        target_compile_options(libgossip PRIVATE -Werror)
+        target_compile_options(libgossip_net PRIVATE -Werror)
+    endif()
 endif()
 
-# Set include directories for the library
+# ============================================
+# Include directories
+# ============================================
 target_include_directories(
-  libgossip PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                   $<INSTALL_INTERFACE:include>)
+    libgossip PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                     $<INSTALL_INTERFACE:include>)
 
 target_compile_definitions(libgossip PUBLIC LIBGOSSIP_BUILD)
-# Set target properties
-set_target_properties(libgossip PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION
-                                                                      1)
 
-set_target_properties(libgossip_net PROPERTIES VERSION ${PROJECT_VERSION}
-                                               SOVERSION 1)
+# ============================================
+# Target properties
+# ============================================
+set_target_properties(libgossip PROPERTIES 
+    VERSION ${PROJECT_VERSION} 
+    SOVERSION 1
+    OUTPUT_NAME "gossip"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
+set_target_properties(libgossip_net PROPERTIES 
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
+    OUTPUT_NAME "gossip_net"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 # Create export header
 include(GenerateExportHeader)

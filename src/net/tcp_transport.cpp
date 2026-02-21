@@ -1,8 +1,10 @@
 #include "net/tcp_transport.hpp"
+#include "core/enum_reflection.inl"
 #include <asio.hpp>
 #include <chrono>
 #include <functional>
 #include <iostream>
+#include <map>
 #include <thread>
 
 namespace gossip {
@@ -51,11 +53,13 @@ namespace gossip {
                         asio::post(io_context_, [this]() {
                             acceptor_.close();
                             // Close all connected sockets
+                            std::lock_guard<std::mutex> lock(sockets_mutex_);
                             for (auto &socket: sockets_) {
                                 if (socket->is_open()) {
                                     socket->close();
                                 }
                             }
+                            outbound_sockets_.clear();
                         });
                     }
 
@@ -93,18 +97,35 @@ namespace gossip {
                     return ec;
                 }
 
-                // In a real implementation, we would send data over TCP to the target node
-                // Here we just log and simulate
-                std::cout << "Sending message of type " << static_cast<int>(msg.type)
-                          << " to " << target.ip << ":" << target.port
-                          << " via TCP (serialized to " << data.size() << " bytes)" << std::endl;
+                // Prepare message with 4-byte length prefix
+                std::vector<uint8_t> packet;
+                packet.reserve(4 + data.size());
+                
+                // Add 4-byte length prefix (big-endian)
+                uint32_t length = static_cast<uint32_t>(data.size());
+                packet.push_back((length >> 24) & 0xFF);
+                packet.push_back((length >> 16) & 0xFF);
+                packet.push_back((length >> 8) & 0xFF);
+                packet.push_back(length & 0xFF);
+                
+                // Add serialized data
+                packet.insert(packet.end(), data.begin(), data.end());
 
-                // Simulate async send
-                asio::post(io_context_, [this, data, target]() {
-                    // In a real implementation, this would actually send data via TCP
-                    // We just simulate the receive process
-                    simulate_receive(data, target);
-                });
+                // Find or create a connection to the target
+                auto socket = get_or_create_socket(target.ip, target.port);
+                if (!socket) {
+                    return error_code::network_error;
+                }
+
+                // Send over TCP
+                asio::error_code send_ec;
+                size_t bytes_sent = socket->send(asio::buffer(packet), 0, send_ec);
+                
+                if (send_ec) {
+                    std::cerr << "Failed to send TCP message to " << target.ip << ":" << target.port
+                              << ": " << send_ec.message() << std::endl;
+                    return error_code::network_error;
+                }
 
                 return error_code::success;
             }
@@ -130,23 +151,48 @@ namespace gossip {
                     return;
                 }
 
-                // In a real implementation, we would send data over TCP
-                // Here we just log and simulate
-                std::cout << "Async sending message of type " << static_cast<int>(msg.type)
-                          << " to " << target.ip << ":" << target.port
-                          << " via TCP (serialized to " << data.size() << " bytes)" << std::endl;
+                // Prepare message with 4-byte length prefix
+                std::vector<uint8_t> packet;
+                packet.reserve(4 + data.size());
+                
+                // Add 4-byte length prefix (big-endian)
+                uint32_t length = static_cast<uint32_t>(data.size());
+                packet.push_back((length >> 24) & 0xFF);
+                packet.push_back((length >> 16) & 0xFF);
+                packet.push_back((length >> 8) & 0xFF);
+                packet.push_back(length & 0xFF);
+                
+                // Add serialized data
+                packet.insert(packet.end(), data.begin(), data.end());
 
-                // Simulate async send with callback
-                asio::post(io_context_, [this, data, target, callback]() {
-                    // In a real implementation, this would actually send data via TCP
-                    // We just simulate the receive process
-                    simulate_receive(data, target);
-
-                    // Call the callback
+                // Find or create a connection to the target
+                auto socket = get_or_create_socket(target.ip, target.port);
+                if (!socket) {
                     if (callback) {
-                        callback(error_code::success);
+                        callback(error_code::network_error);
                     }
-                });
+                    return;
+                }
+
+                // Send asynchronously over TCP
+                auto packet_ptr = std::make_shared<std::vector<uint8_t>>(std::move(packet));
+                
+                asio::async_write(
+                    *socket,
+                    asio::buffer(*packet_ptr),
+                    [callback](const asio::error_code &send_ec, size_t /*bytes_sent*/) {
+                        if (send_ec) {
+                            std::cerr << "Failed to async send TCP message: " << send_ec.message() << std::endl;
+                            if (callback) {
+                                callback(error_code::network_error);
+                            }
+                        } else {
+                            if (callback) {
+                                callback(error_code::success);
+                            }
+                        }
+                    }
+                );
             }
 
         private:
@@ -164,10 +210,49 @@ namespace gossip {
 
             void handle_accept(std::shared_ptr<asio::ip::tcp::socket> socket) {
                 std::cout << "New TCP connection accepted" << std::endl;
-                sockets_.push_back(socket);
+                {
+                    std::lock_guard<std::mutex> lock(sockets_mutex_);
+                    sockets_.push_back(socket);
+                }
 
                 // Start receiving data from this socket
                 start_receive_from_socket(socket);
+            }
+
+            std::shared_ptr<asio::ip::tcp::socket> get_or_create_socket(const std::string &ip, int port) {
+                // Create connection key
+                std::string key = ip + ":" + std::to_string(port);
+                
+                // Check if we already have a connection
+                {
+                    std::lock_guard<std::mutex> lock(sockets_mutex_);
+                    auto it = outbound_sockets_.find(key);
+                    if (it != outbound_sockets_.end() && it->second->is_open()) {
+                        return it->second;
+                    }
+                }
+                
+                // Create new connection
+                auto socket = std::make_shared<asio::ip::tcp::socket>(io_context_);
+                asio::ip::tcp::endpoint endpoint(asio::ip::make_address(ip), static_cast<unsigned short>(port));
+                
+                asio::error_code connect_ec;
+                socket->connect(endpoint, connect_ec);
+                
+                if (connect_ec) {
+                    std::cerr << "Failed to connect to " << ip << ":" << port 
+                              << ": " << connect_ec.message() << std::endl;
+                    return nullptr;
+                }
+                
+                // Store the socket and start receiving
+                {
+                    std::lock_guard<std::mutex> lock(sockets_mutex_);
+                    outbound_sockets_[key] = socket;
+                }
+                start_receive_from_socket(socket);
+                
+                return socket;
             }
 
             void start_receive_from_socket(std::shared_ptr<asio::ip::tcp::socket> socket) {
@@ -179,8 +264,12 @@ namespace gossip {
                                                 // Continue receiving data
                                                 start_receive_from_socket(socket);
                                             } else if (error) {
-                                                std::cerr << "Error receiving data: " << error.message() << std::endl;
+                                                // Only log non-EOF errors (EOF is normal connection close)
+                                                if (error != asio::error::eof) {
+                                                    std::cerr << "Error receiving data: " << error.message() << std::endl;
+                                                }
                                                 // Remove socket from list
+                                                std::lock_guard<std::mutex> lock(sockets_mutex_);
                                                 auto it = std::find(sockets_.begin(), sockets_.end(), socket);
                                                 if (it != sockets_.end()) {
                                                     sockets_.erase(it);
@@ -198,34 +287,41 @@ namespace gossip {
                     // Convert received data to vector of uint8_t
                     std::vector<uint8_t> data(buffer.begin(), buffer.begin() + static_cast<std::vector<char>::difference_type>(bytes_transferred));
 
-                    // Deserialize message
-                    libgossip::gossip_message msg;
-                    error_code ec = serializer_->deserialize(data, msg);
-                    if (ec == error_code::success) {
-                        // Pass message to gossip core
-                        auto now = std::chrono::steady_clock::now();
-                        core_->handle_message(msg, now);
-                    } else {
-                        std::cerr << "Failed to deserialize received message, error code: " << static_cast<int>(ec) << std::endl;
-                    }
-                }
-            }
+                    // Parse message with 4-byte length prefix
+                    size_t offset = 0;
+                    while (offset + 4 <= data.size()) {
+                        // Read length prefix (big-endian)
+                        uint32_t length = (static_cast<uint32_t>(data[offset]) << 24) |
+                                         (static_cast<uint32_t>(data[offset + 1]) << 16) |
+                                         (static_cast<uint32_t>(data[offset + 2]) << 8) |
+                                         static_cast<uint32_t>(data[offset + 3]);
+                        
+                        offset += 4;
 
-            void simulate_receive(const std::vector<uint8_t> &data,
-                                  const libgossip::node_view &target) {
-                // Simulate receive process
-                std::cout << "Simulating TCP receipt of " << data.size() << " bytes" << std::endl;
+                        // Check if we have enough data for the message
+                        if (offset + length > data.size()) {
+                            std::cerr << "Incomplete message, expected " << length 
+                                      << " bytes but only " << (data.size() - offset) << " available" << std::endl;
+                            break;
+                        }
 
-                // If we have core instance and serializer, simulate message processing
-                if (core_ && serializer_) {
-                    // Deserialize message
-                    libgossip::gossip_message msg;
-                    error_code ec = serializer_->deserialize(data, msg);
-                    if (ec == error_code::success) {
-                        auto now = std::chrono::steady_clock::now();
-                        core_->handle_message(msg, now);
-                    } else {
-                        std::cerr << "Failed to deserialize simulated message, error code: " << static_cast<int>(ec) << std::endl;
+                        // Extract message data
+                        std::vector<uint8_t> message_data(data.begin() + offset, data.begin() + offset + length);
+                        offset += length;
+
+                        // Deserialize message
+                        libgossip::gossip_message msg;
+                        error_code ec = serializer_->deserialize(message_data, msg);
+                        if (ec == error_code::success) {
+                            std::cout << "[TCP Server] Successfully deserialized message, type: "
+                                      << static_cast<int>(msg.type) << ", entries: " << msg.entries.size() << std::endl;
+                            // Pass message to gossip core
+                            auto now = std::chrono::steady_clock::now();
+                            core_->handle_message(msg, now);
+                        } else {
+                            std::cerr << "[TCP Server] Failed to deserialize received message, error code: "
+                                      << libgossip::enum_to_string(ec) << std::endl;
+                        }
                     }
                 }
             }
@@ -238,6 +334,8 @@ namespace gossip {
             std::shared_ptr<libgossip::gossip_core> core_;
             std::unique_ptr<message_serializer> serializer_;
             std::vector<std::shared_ptr<asio::ip::tcp::socket>> sockets_;
+            std::map<std::string, std::shared_ptr<asio::ip::tcp::socket>> outbound_sockets_;
+            std::mutex sockets_mutex_;
         };
 
         // TCP transport public interface implementation

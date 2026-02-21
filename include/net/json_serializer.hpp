@@ -11,7 +11,7 @@
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
-// Copyright (c) 2025 Caomengxuan.
+// Copyright (c) 2025 Caomengxuan666.
 //
 // Permission is hereby  granted, free of charge, to any  person obtaining a copy
 // of this software and associated  documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 //
 // THE SOFTWARE  IS PROVIDED "AS  IS", WITHOUT WARRANTY  OF ANY KIND,  EXPRESS OR
 // IMPLIED,  INCLUDING BUT  NOT  LIMITED TO  THE  WARRANTIES OF  MERCHANTABILITY,
-// FITNESS FOR  A PARTICULAR PURPOSE AND  NONINFRINGEMENT. IN NO EVENT  SHALL THE
+// FITNESS FOR A PARTICULAR PURPOSE AND  NONINFRINGEMENT. IN NO EVENT  SHALL THE
 // AUTHORS  OR COPYRIGHT  HOLDERS  BE  LIABLE FOR  ANY  CLAIM,  DAMAGES OR  OTHER
 // LIABILITY, WHETHER IN AN ACTION OF  CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
@@ -34,11 +34,11 @@
 
 /**
  * @file json_serializer.hpp
- * @brief JSON serializer implementation for gossip messages
+ * @brief JSON serializer implementation for gossip messages using nlohmann/json
  * 
  * This file contains the JSON serializer implementation for gossip messages.
  * It provides serialization and deserialization of gossip messages to/from
- * JSON format for network transmission.
+ * JSON format for network transmission using the nlohmann/json library.
  * 
  * @author caomengxuan666
  * @date 2025-08-30
@@ -48,7 +48,7 @@
 #define LIBGOSSIP_JSON_SERIALIZER_HPP
 
 #include "udp_transport.hpp"
-#include <cstring>
+#include <nlohmann/json.hpp>
 #include <map>
 #include <string>
 #include <vector>
@@ -57,7 +57,7 @@ namespace gossip {
     namespace net {
 
         /**
-         * @brief JSON serializer implementation
+         * @brief JSON serializer implementation using nlohmann/json
          * 
          * This class implements the message_serializer interface using JSON as
          * the serialization format. It provides methods to serialize gossip
@@ -84,61 +84,25 @@ namespace gossip {
 
         private:
             /**
-             * @brief Serialize a node view to JSON
-             * @param oss Output string stream
+             * @brief Serialize a node view to JSON object
              * @param node The node to serialize
+             * @return JSON object
              */
-            void serialize_node(std::ostringstream &oss, const libgossip::node_view &node) const;
+            nlohmann::json serialize_node_to_json(const libgossip::node_view &node) const;
 
             /**
-             * @brief Parse entries from JSON string
-             * @param entries_str Input JSON string containing entries
-             * @param entries Output vector of node views
+             * @brief Deserialize a node view from JSON object
+             * @param j Input JSON object
+             * @return Node view
              */
-            void parse_entries(const std::string &entries_str, std::vector<libgossip::node_view> &entries) const;
-
-            /**
-             * @brief Find matching closing brace for an opening brace
-             * @param str Input string
-             * @param start_pos Position of opening brace
-             * @return Position of matching closing brace, or std::string::npos if not found
-             */
-            size_t find_matching_brace(const std::string &str, size_t start_pos) const;
-
-            /**
-             * @brief Parse a node view from JSON string
-             * @param node_str Input JSON string
-             * @param node Output node view
-             */
-            void parse_node(const std::string &node_str, libgossip::node_view &node) const;
-
-            /**
-             * @brief Parse metadata from JSON string
-             * @param metadata_str Input JSON string containing metadata
-             * @param metadata Output metadata map
-             */
-            void parse_metadata(const std::string &metadata_str, std::map<std::string, std::string> &metadata) const;
+            libgossip::node_view deserialize_node_from_json(const nlohmann::json &j) const;
 
             /**
              * @brief Parse a node ID from hex string
              * @param hex_str Input hex string
              * @param node_id Output node ID
              */
-            void parse_node_id(const std::string &hex_str, libgossip::node_id_t &node_id) const;
-            
-            /**
-             * @brief Escape special characters in a string for JSON
-             * @param str Input string
-             * @return Escaped string
-             */
-            std::string escape_json_string(const std::string& str) const;
-            
-            /**
-             * @brief Unescape special characters in a JSON string
-             * @param str Input escaped string
-             * @return Unescaped string
-             */
-            std::string unescape_json_string(const std::string& str) const;
+            void parse_node_id_from_hex(const std::string &hex_str, libgossip::node_id_t &node_id) const;
         };
 
     }// namespace net

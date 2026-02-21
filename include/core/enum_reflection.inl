@@ -8,6 +8,9 @@
  * @author caomengxuan666
  * @date 2025-8-30
  */
+#ifndef LIBGOSSIP_ENUM_REFLECTION_INL
+#define LIBGOSSIP_ENUM_REFLECTION_INL
+
 #include <magic_enum/magic_enum.hpp>
 #include <optional>
 #include <string_view>
@@ -87,3 +90,5 @@ namespace libgossip {
         return magic_enum::enum_count<T>();
     }
 }// namespace libgossip
+
+#endif// LIBGOSSIP_ENUM_REFLECTION_INL

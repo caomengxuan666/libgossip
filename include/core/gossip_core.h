@@ -153,8 +153,11 @@ LIBGOSSIP_API void gossip_core_join(gossip_core_t *core, const gossip_node_view_
 /// Explicitly leave the cluster
 LIBGOSSIP_API void gossip_core_leave(gossip_core_t *core, const gossip_node_id_t *node_id);
 
-/// Get self node view
-LIBGOSSIP_API const gossip_node_view_t *gossip_core_self(const gossip_core_t *core);
+/// Get self node view (caller must free using gossip_core_free_self)
+LIBGOSSIP_API gossip_node_view_t *gossip_core_self(const gossip_core_t *core);
+
+/// Free self node view returned by gossip_core_self
+LIBGOSSIP_API void gossip_core_free_self(gossip_node_view_t *self_view);
 
 /// Get all currently known nodes
 LIBGOSSIP_API gossip_node_view_t *gossip_core_get_nodes(const gossip_core_t *core,

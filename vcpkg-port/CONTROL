@@ -1,0 +1,19 @@
+Source: libgossip
+Version: 1.1.2
+Description: A production-ready C++ Gossip protocol library for distributed systems
+Homepage: https://github.com/caomengxuan666/libgossip
+License: MIT
+Supports: !uwp
+Dependencies:
+    nlohmann-json>=3.11.0
+Features:
+    examples:
+        Description: Build example applications
+    python:
+        Description: Build Python bindings
+        Dependencies:
+            pybind11
+    tests:
+        Description: Build unit tests
+        Dependencies:
+            gtest (host)

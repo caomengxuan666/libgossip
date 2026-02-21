@@ -1,4 +1,5 @@
 #include "net/udp_transport.hpp"
+#include "core/enum_reflection.inl"
 #include <asio.hpp>
 #include <chrono>
 #include <functional>
@@ -86,18 +87,34 @@ namespace gossip {
                     return ec;
                 }
 
-                // In a real implementation, we would send data over UDP
-                // Here we just log and simulate
-                std::cout << "Sending message of type " << static_cast<int>(msg.type)
-                          << " to " << target.ip << ":" << target.port
-                          << " (serialized to " << data.size() << " bytes)" << std::endl;
+                // Prepare message with 4-byte length prefix
+                std::vector<uint8_t> packet;
+                packet.reserve(4 + data.size());
+                
+                // Add 4-byte length prefix (big-endian)
+                uint32_t length = static_cast<uint32_t>(data.size());
+                packet.push_back((length >> 24) & 0xFF);
+                packet.push_back((length >> 16) & 0xFF);
+                packet.push_back((length >> 8) & 0xFF);
+                packet.push_back(length & 0xFF);
+                
+                // Add serialized data
+                packet.insert(packet.end(), data.begin(), data.end());
 
-                // Simulate async send
-                asio::post(io_context_, [this, data, target]() {
-                    // In a real implementation, this would actually send the data
-                    // We just simulate the receive process
-                    simulate_receive(data, target);
-                });
+                // Send over UDP
+                asio::ip::udp::endpoint target_endpoint(
+                    asio::ip::make_address(target.ip), 
+                    static_cast<unsigned short>(target.port)
+                );
+
+                asio::error_code send_ec;
+                size_t bytes_sent = socket_.send_to(asio::buffer(packet), target_endpoint, 0, send_ec);
+                
+                if (send_ec) {
+                    std::cerr << "Failed to send UDP message to " << target.ip << ":" << target.port
+                              << ": " << send_ec.message() << std::endl;
+                    return error_code::network_error;
+                }
 
                 return error_code::success;
             }
@@ -123,23 +140,44 @@ namespace gossip {
                     return;
                 }
 
-                // In a real implementation, we would send data over UDP
-                // Here we just log and simulate
-                std::cout << "Async sending message of type " << static_cast<int>(msg.type)
-                          << " to " << target.ip << ":" << target.port
-                          << " (serialized to " << data.size() << " bytes)" << std::endl;
+                // Prepare message with 4-byte length prefix
+                std::vector<uint8_t> packet;
+                packet.reserve(4 + data.size());
+                
+                // Add 4-byte length prefix (big-endian)
+                uint32_t length = static_cast<uint32_t>(data.size());
+                packet.push_back((length >> 24) & 0xFF);
+                packet.push_back((length >> 16) & 0xFF);
+                packet.push_back((length >> 8) & 0xFF);
+                packet.push_back(length & 0xFF);
+                
+                // Add serialized data
+                packet.insert(packet.end(), data.begin(), data.end());
 
-                // Simulate async send with callback
-                asio::post(io_context_, [this, data, target, callback]() {
-                    // In a real implementation, this would actually send the data
-                    // We just simulate the receive process
-                    simulate_receive(data, target);
+                // Send asynchronously over UDP
+                asio::ip::udp::endpoint target_endpoint(
+                    asio::ip::make_address(target.ip), 
+                    static_cast<unsigned short>(target.port)
+                );
 
-                    // Call the callback
-                    if (callback) {
-                        callback(error_code::success);
+                auto packet_ptr = std::make_shared<std::vector<uint8_t>>(std::move(packet));
+                
+                socket_.async_send_to(
+                    asio::buffer(*packet_ptr),
+                    target_endpoint,
+                    [callback](const asio::error_code &send_ec, size_t /*bytes_sent*/) {
+                        if (send_ec) {
+                            std::cerr << "Failed to async send UDP message: " << send_ec.message() << std::endl;
+                            if (callback) {
+                                callback(error_code::network_error);
+                            }
+                        } else {
+                            if (callback) {
+                                callback(error_code::success);
+                            }
+                        }
                     }
-                });
+                );
             }
 
         private:
@@ -168,39 +206,46 @@ namespace gossip {
                     // Convert received data to vector of uint8_t
                     std::vector<uint8_t> data(receive_buffer_.begin(), receive_buffer_.begin() + static_cast<std::vector<char>::difference_type>(bytes_transferred));
 
-                    // Deserialize message
-                    libgossip::gossip_message msg;
-                    error_code ec = serializer_->deserialize(data, msg);
-                    if (ec == error_code::success) {
-                        // Pass message to gossip core
-                        auto now = std::chrono::steady_clock::now();
-                        core_->handle_message(msg, now);
-                    } else {
-                        std::cerr << "Failed to deserialize received message, error code: " << static_cast<int>(ec) << std::endl;
+                    // Parse message with 4-byte length prefix
+                    size_t offset = 0;
+                    while (offset + 4 <= data.size()) {
+                        // Read length prefix (big-endian)
+                        uint32_t length = (static_cast<uint32_t>(data[offset]) << 24) |
+                                         (static_cast<uint32_t>(data[offset + 1]) << 16) |
+                                         (static_cast<uint32_t>(data[offset + 2]) << 8) |
+                                         static_cast<uint32_t>(data[offset + 3]);
+                        
+                        offset += 4;
+
+                        // Check if we have enough data for the message
+                        if (offset + length > data.size()) {
+                            std::cerr << "Incomplete message, expected " << length 
+                                      << " bytes but only " << (data.size() - offset) << " available" << std::endl;
+                            break;
+                        }
+
+                        // Extract message data
+                        std::vector<uint8_t> message_data(data.begin() + offset, data.begin() + offset + length);
+                        offset += length;
+
+                        // Deserialize message
+                        libgossip::gossip_message msg;
+                        error_code ec = serializer_->deserialize(message_data, msg);
+                        if (ec == error_code::success) {
+                            std::cout << "[UDP Server] Successfully deserialized message, type: "
+                                      << static_cast<int>(msg.type) << ", entries: " << msg.entries.size() << std::endl;
+                            // Pass message to gossip core
+                            auto now = std::chrono::steady_clock::now();
+                            core_->handle_message(msg, now);
+                        } else {
+                            std::cerr << "[UDP Server] Failed to deserialize received message, error code: "
+                                      << libgossip::enum_to_string(ec) << std::endl;
+                        }
                     }
                 }
 
                 // Continue receiving
                 start_receive();
-            }
-
-            void simulate_receive(const std::vector<uint8_t> &data,
-                                  const libgossip::node_view &target) {
-                // Simulate receive process
-                std::cout << "Simulating receipt of " << data.size() << " bytes" << std::endl;
-
-                // If we have core instance and serializer, simulate message processing
-                if (core_ && serializer_) {
-                    // Deserialize message
-                    libgossip::gossip_message msg;
-                    error_code ec = serializer_->deserialize(data, msg);
-                    if (ec == error_code::success) {
-                        auto now = std::chrono::steady_clock::now();
-                        core_->handle_message(msg, now);
-                    } else {
-                        std::cerr << "Failed to deserialize simulated message, error code: " << static_cast<int>(ec) << std::endl;
-                    }
-                }
             }
 
             asio::io_context io_context_;

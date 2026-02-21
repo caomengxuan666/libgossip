@@ -325,9 +325,7 @@ public:
             }
         });
 
-        // Broadcast a join message to announce our presence
-        broadcast_join_message();
-
+        // Note: broadcast_join_message() will be called after manager_nodes are set
         std::cout << "Started Redis node " << m_index << std::endl;
         return gossip::net::error_code::success;
     }
@@ -431,12 +429,41 @@ public:
         }
     }
 
+    /**
+     * @brief Broadcast a join message to announce our presence
+     */
+    void broadcast_join_message() {
+        libgossip::gossip_message msg;
+        // 使用 gossip_core 内部的最新状态
+        auto self = m_core->self();
+        msg.sender = self.id;
+        msg.type = libgossip::message_type::join;
+
+        auto now = libgossip::clock::now();
+        msg.timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+                            now.time_since_epoch()).count();
+
+        msg.entries.push_back(self);
+
+        size_t sent_count = 0;
+        for (auto* node : m_manager_nodes) {
+            if (node != this) {
+                g_node_registry[node->get_node_info().port]->receive_message(msg);
+                g_stats.total_messages_sent++;
+                sent_count++;
+            }
+        }
+
+        std::cout << "[Node " << m_index << "] Broadcast join message to "
+                  << sent_count << " nodes" << std::endl;
+    }
+
 private:
     /**
      * @brief Send callback function
-     * 
+     *
      * This function is called by the gossip core when it needs to send a message.
-     * 
+     *
      * @param msg The message to send
      * @param target The target node
      */
@@ -567,33 +594,6 @@ private:
             std::cout << "[Node " << m_index << "] Broadcast join message to "
                       << (m_manager_nodes.size() - 1) << " nodes" << std::endl;
         }
-    }
-
-    /**
-     * @brief Broadcast a join message to announce our presence
-     */
-    void broadcast_join_message() {
-        libgossip::gossip_message msg;
-        // 使用 gossip_core 内部的最新状态
-        auto self = m_core->self();
-        msg.sender = self.id;
-        msg.type = libgossip::message_type::join;
-        
-        auto now = libgossip::clock::now();
-        msg.timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
-                            now.time_since_epoch()).count();
-
-        msg.entries.push_back(self);
-
-        for (auto* node : m_manager_nodes) {
-            if (node != this) {
-                g_node_registry[node->get_node_info().port]->receive_message(msg);
-                g_stats.total_messages_sent++;
-            }
-        }
-
-        std::cout << "[Node " << m_index << "] Broadcast join message to " 
-                  << (m_manager_nodes.size() - 1) << " nodes" << std::endl;
     }
 
     /**
@@ -769,6 +769,11 @@ public:
         // Set manager nodes for all nodes to enable proper message sending
         for (auto &node: m_nodes) {
             node->set_manager_nodes(m_nodes);
+        }
+
+        // Now broadcast join messages since manager_nodes are set
+        for (auto &node: m_nodes) {
+            node->broadcast_join_message();
         }
 
         // Make nodes aware of each other through meet operations
