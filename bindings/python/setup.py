@@ -29,7 +29,6 @@ ext_modules = [
         libraries=["stdc++"] if sys.platform != "win32" else [],
         # Add extra flags for manylinux compatibility
         extra_compile_args=["-fvisibility=hidden"],
-        extra_link_args=["-static-libstdc++"] if sys.platform != "win32" else [],
     ),
 ]
 

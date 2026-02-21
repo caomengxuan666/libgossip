@@ -92,7 +92,7 @@ jobs:
             ASIO_STANDALONE=1
             ASIO_NO_TYPEID=1
           CIBW_DEPENDENCY_CONSTRAINTS: none
-          CIBW_REPAIR_WHEEL_COMMAND: ""
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_BEFORE_BUILD: |
             python -m pip install pybind11==3.0.0
             echo "=== Directory structure ===" && ls -la /project/bindings/python
