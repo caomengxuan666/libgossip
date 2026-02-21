@@ -22,4 +22,5 @@ bindings/python/dist/
 *.dll
 html/
 latex/
+venv/
 CMakeUserPresets.json
