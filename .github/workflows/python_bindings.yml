@@ -192,6 +192,12 @@ jobs:
         run: |
           python -m twine check dist/*
 
+      - name: Filter out unsupported wheels
+        run: |
+          find dist -name "*linux_i686.whl" -delete
+          echo "Remaining files:"
+          ls -la dist/
+
       - name: Publish to Test PyPI
         run: |
           twine upload --verbose --repository-url https://test.pypi.org/legacy/     dist/*
