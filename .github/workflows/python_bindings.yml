@@ -82,7 +82,8 @@ jobs:
           CIBW_BEFORE_BUILD: |
             python -m pip install pybind11==3.0.0
             echo "=== Directory structure ===" && ls -la /project/bindings/python
-            echo "=== Include paths ===" && ls -la /project/third_party/json/single_include/nlohmann || ls -la /project/third_party/json/single_include
+            echo "=== JSON include path ===" && ls -la /project/third_party/json/single_include/nlohmann || ls -la /project/third_party/json/single_include
+            echo "=== Magic enum include path ===" && ls -la /project/third_party/magic_enum
             echo "=== Setup.py content ===" && cat /project/bindings/python/setup.py
 
       - name: Check wheel metadata
