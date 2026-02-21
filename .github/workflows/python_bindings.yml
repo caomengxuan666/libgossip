@@ -69,6 +69,14 @@ jobs:
           echo "Pybind11 version:"
           python -c "import pybind11; print(pybind11.__version__)"
 
+      - name: Test local build
+        shell: bash
+        run: |
+          cd bindings/python
+          python -m pip install --user pybind11==3.0.0 build
+          python -m build --wheel --no-isolation 2>&1 | tee build.log || true
+          cat build.log
+
       - name: Build wheels with cibuildwheel
         uses: pypa/cibuildwheel@v2.16.5
         with:
