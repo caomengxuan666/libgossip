@@ -23,7 +23,8 @@ ext_modules = [
         include_dirs=[
             "../../include",
             "../../src",
-            "../../third_party/asio/asio/include"
+            "../../third_party/asio/asio/include",
+            "../../third_party/json/single_include"
         ],
         cxx_std=17,
         define_macros=[("LIBGOSSIP_BUILD", None)],
