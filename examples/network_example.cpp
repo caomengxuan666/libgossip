@@ -7,6 +7,9 @@
 #include <memory>
 #include <thread>
 
+using namespace gossip;
+using namespace gossip::net;
+
 // Send callback function
 void send_callback(const libgossip::gossip_message &msg, const libgossip::node_view &target) {
     std::cout << "Core send callback: Sending message of type "
@@ -24,11 +27,9 @@ void event_callback(const libgossip::node_view &node, libgossip::node_status old
 
 // Server process - listens on given port
 void run_tcp_server(int port) {
-    std::cout << "[Server] Starting TCP server on port " << port << std::endl;
-
-    // Create server node
+// Create server node
     libgossip::node_view server_node;
-    server_node.id = libgossip::NodeId::generate_random();
+    server_node.id = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}};
     server_node.ip = "127.0.0.1";
     server_node.port = port;
     server_node.status = libgossip::node_status::online;
@@ -68,7 +69,7 @@ void run_udp_server(int port) {
 
     // Create server node
     libgossip::node_view server_node;
-    server_node.id = libgossip::NodeId::generate_random();
+    server_node.id = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2}};
     server_node.ip = "127.0.0.1";
     server_node.port = port;
     server_node.status = libgossip::node_status::online;
@@ -109,7 +110,7 @@ void run_tcp_client(int server_port) {
 
     // Create client node
     libgossip::node_view client_node;
-    client_node.id = libgossip::NodeId::generate_random();
+    client_node.id = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3}};
     client_node.ip = "127.0.0.1";
     client_node.port = 9001;
     client_node.status = libgossip::node_status::online;
@@ -134,11 +135,9 @@ void run_tcp_client(int server_port) {
         return;
     }
 
-    std::cout << "[Client] TCP transport started successfully" << std::endl;
-
-    // Create target node (server)
+// Create target node (server)
     libgossip::node_view target_node;
-    target_node.id = libgossip::NodeId::generate_random();
+    target_node.id = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4}};
     target_node.ip = "127.0.0.1";
     target_node.port = server_port;
     target_node.status = libgossip::node_status::online;
@@ -200,7 +199,7 @@ void run_udp_client(int server_port) {
 
     // Create client node
     libgossip::node_view client_node;
-    client_node.id = libgossip::NodeId::generate_random();
+    client_node.id = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5}};
     client_node.ip = "127.0.0.1";
     client_node.port = 8002;
     client_node.status = libgossip::node_status::online;
@@ -229,7 +228,7 @@ void run_udp_client(int server_port) {
 
     // Create target node (server)
     libgossip::node_view target_node;
-    target_node.id = libgossip::NodeId::generate_random();
+    target_node.id = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6}};
     target_node.ip = "127.0.0.1";
     target_node.port = server_port;
     target_node.status = libgossip::node_status::online;
