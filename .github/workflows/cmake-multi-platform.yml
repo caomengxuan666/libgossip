@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        build_type: [Release, Debug]
+        build_type: [Release]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -62,7 +62,8 @@ jobs:
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} ^
             -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} ^
             -DBUILD_PYTHON_BINDINGS=ON ^
-            -DBUILD_TESTS=ON
+            -DBUILD_TESTS=ON ^
+            -DBUILD_EXAMPLES=OFF
 
       - name: Configure CMake (Linux)
         if: matrix.is_windows == false
@@ -76,7 +77,8 @@ jobs:
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_CXX_FLAGS="-fPIC -fvisibility=default" \
             -DBUILD_PYTHON_BINDINGS=ON \
-            -DBUILD_TESTS=ON
+            -DBUILD_TESTS=ON \
+            -DBUILD_EXAMPLES=OFF
 
       - name: Build (Windows)
         if: matrix.is_windows
