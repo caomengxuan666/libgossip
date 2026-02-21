@@ -77,6 +77,11 @@ jobs:
           python -m build --wheel --no-isolation 2>&1 | tee build.log || true
           cat build.log
 
+      - name: Clean build artifacts
+        shell: bash
+        run: |
+          rm -rf bindings/python/build bindings/python/dist bindings/python/*.egg-info
+
       - name: Build wheels with cibuildwheel
         uses: pypa/cibuildwheel@v2.16.5
         with:
@@ -87,6 +92,7 @@ jobs:
             ASIO_STANDALONE=1
             ASIO_NO_TYPEID=1
           CIBW_DEPENDENCY_CONSTRAINTS: none
+          CIBW_REPAIR_WHEEL_COMMAND: ""
           CIBW_BEFORE_BUILD: |
             python -m pip install pybind11==3.0.0
             echo "=== Directory structure ===" && ls -la /project/bindings/python
