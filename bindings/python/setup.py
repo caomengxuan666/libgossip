@@ -3,11 +3,7 @@ import sys
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup, find_packages
 
-# Determine the source directory
-src_dir = os.path.dirname(os.path.abspath(__file__))
-libgossip_root = os.path.join(src_dir, "../..")
-
-# Define the extension module
+# Define the extension module with relative paths
 ext_modules = [
     Pybind11Extension(
         "libgossip.libgossip_py",
@@ -24,7 +20,7 @@ ext_modules = [
             "../../include",
             "../../src",
             "../../third_party/asio/asio/include",
-            "../../third_party/json/single_include"
+            "../../third_party/json/single_include/nlohmann"
         ],
         cxx_std=17,
         define_macros=[("LIBGOSSIP_BUILD", None)],
