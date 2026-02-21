@@ -79,6 +79,11 @@ jobs:
             ASIO_STANDALONE=1
             ASIO_NO_TYPEID=1
           CIBW_DEPENDENCY_CONSTRAINTS: none
+          CIBW_BEFORE_BUILD: |
+            python -m pip install pybind11==3.0.0
+            echo "=== Directory structure ===" && ls -la /project/bindings/python
+            echo "=== Include paths ===" && ls -la /project/third_party/json/single_include/nlohmann || ls -la /project/third_party/json/single_include
+            echo "=== Setup.py content ===" && cat /project/bindings/python/setup.py
 
       - name: Check wheel metadata
         run: |
