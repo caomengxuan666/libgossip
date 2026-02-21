@@ -20,7 +20,7 @@ ext_modules = [
             "../../include",
             "../../src",
             "../../third_party/asio/asio/include",
-            "../../third_party/json/single_include/nlohmann",
+            "../../third_party/json/single_include",
             "../../third_party"
         ],
         cxx_std=17,
