@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(
   libgossip
-  VERSION 1.1.2
+  VERSION 1.2.0
   LANGUAGES CXX C
   DESCRIPTION "A production-ready C++ Gossip protocol library for distributed systems"
   HOMEPAGE_URL "https://github.com/caomengxuan666/libgossip"

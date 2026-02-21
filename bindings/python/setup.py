@@ -21,7 +21,7 @@ ext_modules = [
             "../../src",
             "../../third_party/asio/asio/include",
             "../../third_party/json/single_include/nlohmann",
-            "../../third_party/magic_enum"
+            "../../third_party"
         ],
         cxx_std=17,
         define_macros=[("LIBGOSSIP_BUILD", None)],
