@@ -77,6 +77,8 @@ set(LIBGOSSIP_NET_SRC
     src/net/json_serializer.cpp)
 
 add_library(libgossip_net ${LIBGOSSIP_NET_SRC})
+target_compile_definitions(libgossip_net PUBLIC LIBGOSSIP_BUILD)
+
 add_library(libgossip::network ALIAS libgossip_net)
 
 # ============================================
