@@ -5,6 +5,13 @@
 
 #pragma once
 
+// On Windows, ERROR macro is defined in windows.h which may conflict with our LogLevel::ERROR
+// Push and undef ERROR macro to avoid conflict
+#ifdef _WIN32
+#pragma push_macro("ERROR")
+#undef ERROR
+#endif
+
 #include <string>
 #include <fstream>
 #include <mutex>
@@ -148,3 +155,8 @@ private:
 #define LIBGOSSIP_LOG_FATAL(msg) LIBGOSSIP_LOG(FATAL, msg)
 
 } // namespace libgossip
+
+// Restore ERROR macro on Windows
+#ifdef _WIN32
+#pragma pop_macro("ERROR")
+#endif

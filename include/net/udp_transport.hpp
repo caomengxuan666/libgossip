@@ -7,7 +7,7 @@
 //            |___/                |_|    
 // Project: libgossip
 // Repository: https://github.com/caomengxuan666/libgossip
-// Version: 1.1.2
+// Version: 1.3.0
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -163,8 +163,11 @@ namespace gossip {
      * This class implements the transport interface using UDP as the underlying
      * network protocol. It provides both synchronous and asynchronous message
      * sending capabilities.
+     * 
+     * @deprecated This transport implementation is deprecated. Use the transport
+     *             factory or a custom transport implementation instead.
      */
-        class LIBGOSSIP_API udp_transport : public transport {
+        class [[deprecated("Use transport_factory or custom transport implementation")]] LIBGOSSIP_API udp_transport : public transport {
         public:
             /**
          * @brief Constructor

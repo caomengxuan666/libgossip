@@ -8,18 +8,9 @@
 
 #pragma once
 
+#include "version.hpp"
 #include <cstdint>
 #include <cstddef>
-
-// ============================================
-// Library Identification
-// ============================================
-#define LIBGOSSIP_NAME "libgossip"
-#define LIBGOSSIP_VERSION "1.1.2"
-#define LIBGOSSIP_VERSION_MAJOR 1
-#define LIBGOSSIP_VERSION_MINOR 1
-#define LIBGOSSIP_VERSION_PATCH 2
-#define LIBGOSSIP_VERSION_NUMBER 10102
 
 // ============================================
 // Feature Flags

@@ -139,11 +139,29 @@ Each example demonstrates different aspects of library usage.
 ### Network Classes
 
 - [transport](include/net/udp_transport.hpp) - Abstract transport interface
-- [udp_transport](include/net/udp_transport.hpp) - UDP-based transport implementation
-- [tcp_transport](include/net/tcp_transport.hpp) - TCP-based transport implementation
-- [transport_factory](include/net/transport_factory.hpp) - Factory for creating transport instances
+- [udp_transport](include/net/udp_transport.hpp) - UDP-based transport implementation (**deprecated**, use transport_factory instead)
+- [tcp_transport](include/net/tcp_transport.hpp) - TCP-based transport implementation (**deprecated**, use transport_factory instead)
+- [transport_factory](include/net/transport_factory.hpp) - Factory for creating transport instances (recommended)
 - [message_serializer](include/net/udp_transport.hpp) - Abstract message serialization interface
 - [json_serializer](include/net/json_serializer.hpp) - JSON-based message serialization implementation
+
+### Logging System
+
+libgossip includes a configurable logging system for debugging and monitoring:
+
+- [logger](include/core/logger.hpp) - Logging system with file and stderr output
+- Controlled by `LIBGOSSIP_ENABLE_LOGGING` macro (default: enabled)
+- Supports multiple log levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+- Thread-safe singleton design
+
+```cpp
+// Initialize logger (optional, defaults to stderr output)
+libgossip::Logger::Instance().Init("libgossip.log", libgossip::LogLevel::DEBUG);
+
+// Use logging macros
+LIBGOSSIP_LOG_DEBUG("Node " << node_id << " joined");
+LIBGOSSIP_LOG_INFO("Cluster size: " << core.size());
+```
 
 ### C API Functions
 
@@ -154,6 +172,7 @@ Each example demonstrates different aspects of library usage.
 - `gossip_core_meet()` - Introduce a new node to the cluster
 - `gossip_core_join()` - Join an existing node
 - `gossip_core_leave()` - Gracefully leave the cluster
+- `gossip_core_update_self_metadata()` - Update self node metadata (thread-safe)
 
 ### Key Methods
 
@@ -162,6 +181,7 @@ Each example demonstrates different aspects of library usage.
 - `gossip_core::meet()` - Introduce a new node to the cluster
 - `gossip_core::join()` - Join an existing node
 - `gossip_core::leave()` - Gracefully leave the cluster
+- `gossip_core::update_self_metadata()` - Update self node metadata (thread-safe, can be called from any thread)
 
 ## Example Guide
 

@@ -326,4 +326,27 @@ void *gossip_core_get_internal(gossip_core_t *core) {
     return wrapper->core.get();
 }
 
+void gossip_core_update_self_metadata(gossip_core_t *core,
+                                      const char **keys,
+                                      const char **values,
+                                      size_t count) {
+    if (!core || !keys || !values || count == 0) {
+        return;
+    }
+    
+    auto wrapper = reinterpret_cast<gossip_core_wrapper *>(core);
+    if (!wrapper->core) {
+        return;
+    }
+    
+    std::map<std::string, std::string> metadata;
+    for (size_t i = 0; i < count; ++i) {
+        if (keys[i] && values[i]) {
+            metadata[keys[i]] = values[i];
+        }
+    }
+    
+    wrapper->core->update_self_metadata(metadata);
+}
+
 }// extern "C"

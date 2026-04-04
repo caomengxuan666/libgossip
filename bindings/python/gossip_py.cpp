@@ -156,7 +156,10 @@ PYBIND11_MODULE(libgossip_py, m) {
             .def("size", &libgossip::gossip_core::size)
             .def("cleanup_expired", &libgossip::gossip_core::cleanup_expired)
             .def("reset", &libgossip::gossip_core::reset)
-            .def("get_stats", &libgossip::gossip_core::get_stats);
+            .def("get_stats", &libgossip::gossip_core::get_stats)
+            .def("update_self_metadata", &libgossip::gossip_core::update_self_metadata,
+                 "Update self node metadata (thread-safe)",
+                 py::arg("metadata"));
 
     // Network module bindings
 

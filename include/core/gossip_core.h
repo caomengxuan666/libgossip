@@ -7,7 +7,7 @@
 //            |___/                |_|    
 // Project: libgossip
 // Repository: https://github.com/caomengxuan666/libgossip
-// Version: 1.1.2
+// Version: 1.3.0
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -179,6 +179,16 @@ LIBGOSSIP_API void gossip_core_reset(gossip_core_t *core);
 
 /// Get the internal C++ gossip core instance from the C wrapper
 LIBGOSSIP_API void *gossip_core_get_internal(gossip_core_t *core);
+
+/// Update self node metadata (thread-safe)
+/// @param core The gossip core instance
+/// @param keys Array of metadata keys
+/// @param values Array of metadata values
+/// @param count Number of key-value pairs
+LIBGOSSIP_API void gossip_core_update_self_metadata(gossip_core_t *core,
+                                                    const char **keys,
+                                                    const char **values,
+                                                    size_t count);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(
   libgossip
-  VERSION 1.2.1.3
+  VERSION 1.3.0.0
   LANGUAGES CXX C
   DESCRIPTION "A production-ready C++ Gossip protocol library for distributed systems"
   HOMEPAGE_URL "https://github.com/caomengxuan666/libgossip"
@@ -55,6 +55,14 @@ include(FindDependencies)
 # Include directories
 # ============================================
 include_directories(third_party)
+
+# ============================================
+# Generate version header
+# ============================================
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/core/version.hpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/include/core/version.hpp
+    @ONLY)
 
 set(LIBGOSSIP_CORE_SRC src/core/gossip_core.cpp src/core/gossip_c.cpp
                        include/libgossip_api.h)
@@ -139,7 +147,13 @@ endif()
 # ============================================
 target_include_directories(
     libgossip PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
                      $<INSTALL_INTERFACE:include>)
+
+target_include_directories(
+    libgossip_net PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+                         $<INSTALL_INTERFACE:include>)
 
 # ============================================
 # Target properties

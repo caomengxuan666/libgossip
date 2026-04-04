@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "version.hpp"
 #include <cstdint>
 #include <string>
 #include <sstream>
@@ -98,7 +99,12 @@ struct version_info {
 /**
  * @brief Current library version
  */
-constexpr version_info LIBGOSSIP_VERSION = {1, 1, 2, 0};
+constexpr version_info LIBGOSSIP_VERSION = {
+    LIBGOSSIP_VERSION_MAJOR, 
+    LIBGOSSIP_VERSION_MINOR, 
+    LIBGOSSIP_VERSION_PATCH, 
+    LIBGOSSIP_VERSION_TWEAK
+};
 
 /**
  * @brief Minimum compatible library version
