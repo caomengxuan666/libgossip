@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(
   libgossip
-  VERSION 1.2.0
+  VERSION 1.2.1.3
   LANGUAGES CXX C
   DESCRIPTION "A production-ready C++ Gossip protocol library for distributed systems"
   HOMEPAGE_URL "https://github.com/caomengxuan666/libgossip"
@@ -140,8 +140,6 @@ endif()
 target_include_directories(
     libgossip PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                      $<INSTALL_INTERFACE:include>)
-
-target_compile_definitions(libgossip PUBLIC LIBGOSSIP_BUILD)
 
 # ============================================
 # Target properties

@@ -277,6 +277,11 @@ namespace libgossip {
         /// Get statistics
         gossip_stats get_stats() const;
 
+        /// Update self metadata (thread-safe, can be called from any thread)
+        /// @param metadata Map of key-value pairs to update in self node's metadata
+        /// @note This allows dynamic updates to self node's metadata without requiring node status change
+        void update_self_metadata(const std::map<std::string, std::string> &metadata) noexcept;
+
     private:
         // ---------------------------------------------------------
         // Private methods

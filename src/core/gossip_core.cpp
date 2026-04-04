@@ -1,5 +1,6 @@
 // src/core/gossip.cpp
 #include "core/gossip_core.hpp"
+#include "core/logger.hpp"
 #include <algorithm>
 #include <random>
 #include <stdexcept>
@@ -137,6 +138,7 @@ namespace libgossip {
     void gossip_core::handle_message(const gossip_message &msg, time_point recv_time) {
         std::lock_guard<std::mutex> lock(mutex_);
         
+        LIBGOSSIP_LOG_DEBUG("handle_message: type=" << static_cast<int>(msg.type) << ", sender entries=" << msg.entries.size());
         received_messages_++;
         node_view *sender = nullptr;
 
@@ -159,7 +161,35 @@ namespace libgossip {
         }
 
         if (!sender && msg.type != message_type::meet && msg.type != message_type::join) {
-            return;// Not MEET/JOIN and not recognized, discard
+            // Not MEET/JOIN and sender not recognized
+            // But still process entries to learn about new nodes and update temporary IDs
+            for (const auto &remote: msg.entries) {
+                // Check if we need to update node ID based on IP:port match
+                auto it_by_addr = std::find_if(nodes_.begin(), nodes_.end(),
+                    [&remote](const node_view &n) {
+                        return n.ip == remote.ip && n.port == remote.port && n.id != remote.id;
+                    });
+                
+                if (it_by_addr != nodes_.end()) {
+                    // Found a node with matching IP:port but different ID
+                    // Update the ID to the real ID
+                    LIBGOSSIP_LOG_DEBUG("handle_message: updating node ID for " 
+                        << remote.ip << ":" << remote.port);
+                    it_by_addr->id = remote.id;
+                    
+                    // If this entry is the sender, update sender pointer
+                    if (remote.id == msg.sender) {
+                        sender = &(*it_by_addr);
+                    }
+                }
+                
+                update_node(remote, recv_time);
+            }
+            
+            // If we still don't know the sender after processing entries, discard
+            if (!sender) {
+                return;
+            }
         }
 
         // Update sender's status
@@ -178,6 +208,7 @@ namespace libgossip {
 
             if (sender->status == node_status::joining) {
                 sender->status = node_status::online;
+                LIBGOSSIP_LOG_DEBUG("handle_message: sender status changed from joining to online");
                 notify(*sender, old_status);
             }
 
@@ -192,6 +223,28 @@ namespace libgossip {
 
         // Handle entries (containing node information carried by the other party)
         for (const auto &remote: msg.entries) {
+            LIBGOSSIP_LOG_DEBUG("handle_message: processing entry, id=" << remote.id[0] << ", ip=" << remote.ip << ":" << remote.port);
+            
+            // Check if we need to update node ID based on IP:port match
+            // This handles the case where we met a node with a temporary ID
+            // and now receive its real ID
+            auto it_by_addr = std::find_if(nodes_.begin(), nodes_.end(),
+                [&remote](const node_view &n) {
+                    bool match = n.ip == remote.ip && n.port == remote.port && n.id != remote.id;
+                    if (match) {
+                        LIBGOSSIP_LOG_DEBUG("handle_message: found matching IP:port with different ID");
+                    }
+                    return match;
+                });
+            
+            if (it_by_addr != nodes_.end()) {
+                // Found a node with matching IP:port but different ID
+                // Update the ID to the real ID
+                LIBGOSSIP_LOG_DEBUG("handle_message: updating node ID for " 
+                    << remote.ip << ":" << remote.port);
+                it_by_addr->id = remote.id;
+            }
+            
             update_node(remote, recv_time);
         }
 
@@ -372,16 +425,41 @@ namespace libgossip {
             return ref;
         } else {
             auto old_status = it->status;
-            // Use can_replace instead of newer_than for more explicit decision
+            auto old_heartbeat = it->heartbeat;
+            auto old_config_epoch = it->config_epoch;
+            auto old_metadata = it->metadata;
+            
+            bool status_changed = false;
+            bool metadata_changed = false;
+            
+            // Use can_replace for version comparison
             if (remote.can_replace(*it)) {
                 *it = remote;
                 it->seen_time = seen_time;
                 if (it->status == node_status::unknown) {
                     it->status = node_status::joining;
                 }
+                status_changed = (old_status != it->status);
+                metadata_changed = (old_metadata != it->metadata);
+            } else if (remote.heartbeat == old_heartbeat && remote.config_epoch == old_config_epoch) {
+                // Even if can_replace returns false (same version), always update metadata
+                // This ensures metadata changes are propagated even without version increment
+                it->metadata = remote.metadata;
+                status_changed = (old_status != it->status);
+                metadata_changed = (old_metadata != it->metadata);
+            } else {
+                status_changed = (old_status != it->status);
+                metadata_changed = (old_metadata != it->metadata);
             }
 
-            if (old_status != it->status) {
+            // Debug logging - removed to avoid log pollution
+            if (metadata_changed) {
+                LIBGOSSIP_LOG_DEBUG("update_node: metadata changed for node, status_changed=" << status_changed << ", metadata_changed=" << metadata_changed);
+            }
+
+            // Trigger notify if status changed OR metadata changed
+            if (status_changed || metadata_changed) {
+                LIBGOSSIP_LOG_DEBUG("update_node: calling notify for node, status_changed=" << status_changed << ", metadata_changed=" << metadata_changed);
                 notify(*it, old_status);
             }
             return *it;
@@ -390,7 +468,7 @@ namespace libgossip {
 
 
     void gossip_core::notify(const node_view &node, node_status old_status) {
-        if (event_fn_ && node.status != old_status) {
+        if (event_fn_) {
             event_fn_(node, old_status);
         }
     }
@@ -426,6 +504,29 @@ namespace libgossip {
         stats.received_messages = received_messages_;
         // last_tick_duration cannot be accurately obtained, because we didn't record it in tick
         return stats;
+    }
+
+    void gossip_core::update_self_metadata(const std::map<std::string, std::string> &metadata) noexcept {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
+        // Update self metadata with provided key-value pairs
+        for (const auto& [key, value] : metadata) {
+            self_.metadata[key] = value;
+            
+            // Update config_epoch if provided
+            if (key == "config_epoch") {
+                try {
+                    self_.config_epoch = std::stoull(value);
+                } catch (...) {
+                    // Ignore parse errors
+                }
+            }
+        }
+        
+        // Increment heartbeat and version to force can_replace() to return true
+        // This ensures the updated metadata will be propagated to other nodes
+        self_.heartbeat++;
+        self_.version++;
     }
 
 }// namespace libgossip
