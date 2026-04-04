@@ -156,6 +156,11 @@ target_include_directories(
                          $<INSTALL_INTERFACE:include>)
 
 # ============================================
+# Compile definitions for DLL export
+# ============================================
+target_compile_definitions(libgossip PUBLIC LIBGOSSIP_BUILD)
+
+# ============================================
 # Target properties
 # ============================================
 set_target_properties(libgossip PROPERTIES 
