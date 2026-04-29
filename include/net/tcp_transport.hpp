@@ -52,6 +52,18 @@ namespace libgossip {
 // Keep backward compatibility alias
 namespace gossip {
     namespace net {
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
         using tcp_transport = libgossip::net::tcp_transport;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#else
+#pragma GCC diagnostic pop
+#endif
     } // namespace net
 } // namespace gossip

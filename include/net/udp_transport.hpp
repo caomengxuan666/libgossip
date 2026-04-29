@@ -120,7 +120,19 @@ namespace libgossip {
 namespace gossip {
     namespace net {
         using transport = libgossip::net::transport;
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
         using udp_transport = libgossip::net::udp_transport;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#else
+#pragma GCC diagnostic pop
+#endif
         using error_code = libgossip::net::error_code;
     } // namespace net
 } // namespace gossip

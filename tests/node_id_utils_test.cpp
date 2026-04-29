@@ -1,5 +1,6 @@
 #include "core/node_id_utils.hpp"
 #include <gtest/gtest.h>
+#include <cstring>
 
 using namespace libgossip;
 
