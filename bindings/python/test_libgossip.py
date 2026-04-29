@@ -82,13 +82,13 @@ def test_json_serializer():
     
     # Serialize the message
     error_code, data = serializer.serialize(msg)
-    assert error_code == libgossip.ErrorCode.SUCCESS
+    assert error_code == libgossip.SerializationError.SUCCESS
     assert isinstance(data, list)  # Should be a list of bytes
     assert len(data) > 0
     
     # Deserialize the message
     error_code, decoded_msg = serializer.deserialize(data)
-    assert error_code == libgossip.ErrorCode.SUCCESS
+    assert error_code == libgossip.SerializationError.SUCCESS
     assert decoded_msg.type == msg.type
     # Note: Due to limitations in the simple JSON parser, timestamp may not deserialize correctly
     # For now, we're just checking that it doesn't fail

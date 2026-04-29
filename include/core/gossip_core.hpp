@@ -46,7 +46,7 @@
 #ifndef LIBGOSSIP_CORE_HPP
 #define LIBGOSSIP_CORE_HPP
 
-#include "libgossip_api.h"
+#include "config.hpp"
 #include "magic_enum/magic_enum.hpp"
 #include <array>
 #include <chrono>
@@ -304,14 +304,15 @@ namespace libgossip {
         send_callback send_fn_;
         event_callback event_fn_;
 
-        duration_ms heartbeat_interval_ = std::chrono::milliseconds(100);
-        duration_ms failure_timeout_ = std::chrono::milliseconds(2000);// 2s without update → suspect
-        int gossip_nodes_ = 3;                                         // Send gossip to 3 random nodes each time
-        int sync_nodes_ = 2;                                           // Carry 2 other node information each time
+        duration_ms heartbeat_interval_ = std::chrono::milliseconds(config::DEFAULT_HEARTBEAT_INTERVAL_MS);
+        duration_ms failure_timeout_ = std::chrono::milliseconds(config::DEFAULT_FAILURE_TIMEOUT_MS);
+        int gossip_nodes_ = config::DEFAULT_GOSSIP_NODES;
+        int sync_nodes_ = config::DEFAULT_SYNC_NODES;
 
         // Statistics
         size_t sent_messages_ = 0;
         size_t received_messages_ = 0;
+        duration_ms last_tick_duration_ = duration_ms(0);
 
         // Thread safety
         mutable std::mutex mutex_;

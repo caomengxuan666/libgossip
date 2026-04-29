@@ -81,7 +81,7 @@ gossip_error_code_t gossip_serializer_serialize(const gossip_serializer_t *seria
         std::vector<uint8_t> serialized_data;
         auto result = wrapper->serializer->serialize(cpp_msg, serialized_data);
 
-        if (result == error_code::success) {
+        if (result == serialization_error::success) {
             // Allocate memory for the data and copy it
             *data_size = serialized_data.size();
             *data = static_cast<uint8_t *>(std::malloc(*data_size));
@@ -92,7 +92,7 @@ gossip_error_code_t gossip_serializer_serialize(const gossip_serializer_t *seria
                 return GOSSIP_ERR_NETWORK_ERROR;
             }
         } else {
-            return static_cast<gossip_error_code_t>(result);
+            return GOSSIP_ERR_SERIALIZATION_ERROR;
         }
     } catch (...) {
         return GOSSIP_ERR_SERIALIZATION_ERROR;
@@ -115,7 +115,7 @@ gossip_error_code_t gossip_serializer_deserialize(const gossip_serializer_t *ser
 
         auto result = wrapper->serializer->deserialize(serialized_data, cpp_msg);
 
-        if (result == error_code::success) {
+        if (result == serialization_error::success) {
             // Convert C++ message to C message
             msg->sender = to_c_node_id(cpp_msg.sender);
             msg->type = static_cast<gossip_message_type_t>(cpp_msg.type);
@@ -141,7 +141,7 @@ gossip_error_code_t gossip_serializer_deserialize(const gossip_serializer_t *ser
 
             return GOSSIP_ERR_SUCCESS;
         } else {
-            return static_cast<gossip_error_code_t>(result);
+            return GOSSIP_ERR_SERIALIZATION_ERROR;
         }
     } catch (...) {
         return GOSSIP_ERR_SERIALIZATION_ERROR;

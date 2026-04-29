@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(
   libgossip
-  VERSION 1.3.0.0
+  VERSION 1.4.0
   LANGUAGES CXX C
   DESCRIPTION "A production-ready C++ Gossip protocol library for distributed systems"
   HOMEPAGE_URL "https://github.com/caomengxuan666/libgossip"
@@ -64,8 +64,11 @@ configure_file(
     ${CMAKE_CURRENT_BINARY_DIR}/include/core/version.hpp
     @ONLY)
 
-set(LIBGOSSIP_CORE_SRC src/core/gossip_core.cpp src/core/gossip_c.cpp
-                       include/libgossip_api.h)
+set(LIBGOSSIP_CORE_SRC 
+    src/core/gossip_core.cpp 
+    src/core/gossip_c.cpp
+    src/core/node_id_utils.cpp
+    src/core/gossip_manager.cpp)
 
 # Create the main library
 add_library(libgossip ${LIBGOSSIP_CORE_SRC})
@@ -82,7 +85,8 @@ setup_bundled_asio()
 set(LIBGOSSIP_NET_SRC
     src/net/udp_transport.cpp src/net/tcp_transport.cpp
     src/net/transport_factory.cpp src/net/gossip_net_c.cpp
-    src/net/json_serializer.cpp)
+    src/net/json_serializer.cpp
+    src/net/serializer_factory.cpp)
 
 add_library(libgossip_net ${LIBGOSSIP_NET_SRC})
 target_compile_definitions(libgossip_net PUBLIC LIBGOSSIP_BUILD)
@@ -274,6 +278,7 @@ if(BUILD_TESTS)
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       COMMENT "Running tests and generating coverage report..."
       DEPENDS gossip_core_test transport_test serializer_test
+              node_id_utils_test gossip_manager_test
       VERBATIM)
 
     message(STATUS "Coverage analysis enabled")

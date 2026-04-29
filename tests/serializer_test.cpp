@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <string>
 
-using namespace gossip::net;
 using namespace libgossip;
 
 // Helper function to create test node
@@ -46,7 +45,7 @@ TEST_F(SerializerTest, SerializeEmptyMessageTest) {
     std::vector<uint8_t> data;
     auto ec = serializer->serialize(msg, data);
 
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_GT(data.size(), 0);
 
     // Verify basic structure
@@ -59,7 +58,7 @@ TEST_F(SerializerTest, SerializeEmptyMessageTest) {
     // Deserialize and verify round-trip
     gossip_message deserialized_msg;
     ec = serializer->deserialize(data, deserialized_msg);
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_EQ(msg, deserialized_msg);
 }
 
@@ -76,7 +75,7 @@ TEST_F(SerializerTest, SerializeMessageWithNodesTest) {
     std::vector<uint8_t> data;
     auto ec = serializer->serialize(msg, data);
 
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_GT(data.size(), 0);
 
     // Verify structure contains node information
@@ -89,7 +88,7 @@ TEST_F(SerializerTest, SerializeMessageWithNodesTest) {
     // Deserialize and verify round-trip
     gossip_message deserialized_msg;
     ec = serializer->deserialize(data, deserialized_msg);
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_EQ(msg, deserialized_msg);
 }
 
@@ -117,7 +116,7 @@ TEST_F(SerializerTest, SerializeAllMessageTypesTest) {
         // Serialize
         std::vector<uint8_t> data;
         auto ec = serializer->serialize(msg, data);
-        EXPECT_EQ(ec, error_code::success);
+        EXPECT_EQ(ec, serialization_error::success);
         EXPECT_GT(data.size(), 0);
 
         // Verify type is serialized
@@ -128,7 +127,7 @@ TEST_F(SerializerTest, SerializeAllMessageTypesTest) {
         // Deserialize and verify round-trip
         gossip_message deserialized_msg;
         ec = serializer->deserialize(data, deserialized_msg);
-        EXPECT_EQ(ec, error_code::success);
+        EXPECT_EQ(ec, serialization_error::success);
         EXPECT_EQ(msg, deserialized_msg);
     }
 }
@@ -145,7 +144,7 @@ TEST_F(SerializerTest, SerializeNodeWithMetadataTest) {
     std::vector<uint8_t> data;
     auto ec = serializer->serialize(msg, data);
 
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_GT(data.size(), 0);
 
     // Verify structure
@@ -159,7 +158,7 @@ TEST_F(SerializerTest, SerializeNodeWithMetadataTest) {
     // Deserialize and verify round-trip
     gossip_message deserialized_msg;
     ec = serializer->deserialize(data, deserialized_msg);
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_EQ(msg, deserialized_msg);
 }
 
@@ -178,13 +177,13 @@ TEST_F(SerializerTest, DeserializeTest) {
     std::vector<uint8_t> data;
     auto ec = serializer->serialize(msg, data);
 
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_GT(data.size(), 0);
 
     // Deserialize the message
     gossip_message deserialized_msg;
     ec = serializer->deserialize(data, deserialized_msg);
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
 
     // Verify the deserialized message matches the original
     EXPECT_EQ(msg, deserialized_msg);
@@ -196,7 +195,7 @@ TEST_F(SerializerTest, EmptyDataDeserializeTest) {
 
     auto ec = serializer->deserialize(empty_data, msg);
     // Should handle empty data gracefully
-    EXPECT_EQ(ec, error_code::success);// Or appropriate error code
+    EXPECT_EQ(ec, serialization_error::success);// Or appropriate error code
 
     // Empty data should result in default-initialized message
     gossip_message default_msg{};
@@ -224,7 +223,7 @@ TEST_F(SerializerTest, SerializeNodeWithComplexMetadataTest) {
     std::vector<uint8_t> data;
     auto ec = serializer->serialize(msg, data);
 
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_GT(data.size(), 0);
 
     // Verify structure
@@ -239,7 +238,7 @@ TEST_F(SerializerTest, SerializeNodeWithComplexMetadataTest) {
     // Deserialize and verify round-trip
     gossip_message deserialized_msg;
     ec = serializer->deserialize(data, deserialized_msg);
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     
     // Verify metadata is preserved
     ASSERT_GT(deserialized_msg.entries.size(), 0);
@@ -282,13 +281,13 @@ TEST_F(SerializerTest, EdgeCasesTest) {
     std::vector<uint8_t> data;
     auto ec = serializer->serialize(msg, data);
 
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_GT(data.size(), 0);
 
     // Deserialize and verify round-trip
     gossip_message deserialized_msg;
     ec = serializer->deserialize(data, deserialized_msg);
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     
     ASSERT_EQ(2, deserialized_msg.entries.size());
     
@@ -317,37 +316,37 @@ TEST_F(SerializerTest, EdgeCasesTest) {
 
 // Test malformed data handling
 TEST_F(SerializerTest, MalformedDataTest) {
-    // Test with completely invalid data
+    // Test with completely invalid data (not valid JSON)
     std::vector<uint8_t> invalid_data = {'i', 'n', 'v', 'a', 'l', 'i', 'd'};
     gossip_message msg;
     
     auto ec = serializer->deserialize(invalid_data, msg);
-    // Our implementation gracefully handles errors and returns success
-    EXPECT_EQ(ec, error_code::success);
+    // Invalid JSON should return deserialization_failed
+    EXPECT_EQ(ec, serialization_error::deserialization_failed);
     
     // Test with partially valid JSON but missing required fields
     std::string partial_json = "{\"timestamp\":1234567890,\"type\":1}";
     std::vector<uint8_t> partial_data(partial_json.begin(), partial_json.end());
     
     ec = serializer->deserialize(partial_data, msg);
-    // Our implementation gracefully handles errors and returns success
-    EXPECT_EQ(ec, error_code::success);
+    // Valid JSON but missing fields - should succeed gracefully
+    EXPECT_EQ(ec, serialization_error::success);
     
-    // Test with corrupted JSON
+    // Test with corrupted JSON (extra closing brace)
     std::string corrupted_json = "{\"sender\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"type\":1,\"timestamp\":1234567890,\"entries\":[{\"id\":[1,2,3],\"ip\":\"127.0.0.1\"}]}}";
     std::vector<uint8_t> corrupted_data(corrupted_json.begin(), corrupted_json.end());
     
     ec = serializer->deserialize(corrupted_data, msg);
-    // Our implementation gracefully handles errors and returns success
-    EXPECT_EQ(ec, error_code::success);
+    // Corrupted JSON should return deserialization_failed
+    EXPECT_EQ(ec, serialization_error::deserialization_failed);
     
-    // Test with incomplete data
+    // Test with incomplete data (truncated JSON)
     std::string incomplete_json = "{\"sender\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"type\":1}";
     std::vector<uint8_t> incomplete_data(incomplete_json.begin(), incomplete_json.end());
     
     ec = serializer->deserialize(incomplete_data, msg);
-    // Our implementation gracefully handles errors and returns success
-    EXPECT_EQ(ec, error_code::success);
+    // Valid JSON that happens to be incomplete - should succeed gracefully
+    EXPECT_EQ(ec, serialization_error::success);
 }
 
 TEST_F(SerializerTest, SerializerInterfaceTest) {
@@ -363,13 +362,13 @@ TEST_F(SerializerTest, SerializerInterfaceTest) {
     std::vector<uint8_t> data;
     auto ec = interface_serializer->serialize(msg, data);
 
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_GT(data.size(), 0);
 
     // Test interface deserialize
     gossip_message deserialized_msg;
     ec = interface_serializer->deserialize(data, deserialized_msg);
-    EXPECT_EQ(ec, error_code::success);
+    EXPECT_EQ(ec, serialization_error::success);
     EXPECT_EQ(msg.timestamp, deserialized_msg.timestamp);
     EXPECT_EQ(msg.type, deserialized_msg.type);
 }
@@ -393,13 +392,13 @@ TEST_F(SerializerTest, TimestampSerializationTest) {
 
         std::vector<uint8_t> data;
         auto ec = serializer->serialize(msg, data);
-        EXPECT_EQ(ec, error_code::success);
+        EXPECT_EQ(ec, serialization_error::success);
         EXPECT_GT(data.size(), 0);
 
         // Deserialize and verify
         gossip_message deserialized_msg;
         ec = serializer->deserialize(data, deserialized_msg);
-        EXPECT_EQ(ec, error_code::success);
+        EXPECT_EQ(ec, serialization_error::success);
         EXPECT_EQ(msg.timestamp, deserialized_msg.timestamp);
     }
 }

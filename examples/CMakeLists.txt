@@ -49,6 +49,9 @@ target_link_libraries(redis_cluster_gossip_example libgossip libgossip_net)
 add_executable(real_cluster_example real_cluster_example.cpp)
 target_link_libraries(real_cluster_example libgossip libgossip_net)
 
+add_executable(gossip_manager_example gossip_manager_example.cpp)
+target_link_libraries(gossip_manager_example libgossip libgossip_net)
+
 # ==========================C Bindings===================================== #
 
 # Simple C cluster example
