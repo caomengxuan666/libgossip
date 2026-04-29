@@ -264,21 +264,14 @@ TEST_F(TransportTest, TransportErrorHandlingTest) {
     auto ec = transport->start();
     ASSERT_EQ(ec, error_code::success);
 
-    // Try to send message without setting core and serializer
+    // Factory now automatically sets JSON serializer, so sending should succeed
     libgossip::gossip_message msg;
     msg.sender = self_node.id;
     msg.type = libgossip::message_type::ping;
     msg.timestamp = 12345;
 
     ec = transport->send_message(msg, other_node);
-    // Should fail because no serializer is set
-    EXPECT_EQ(ec, error_code::serialization_error);
-
-    // Set serializer but not core (UDP can still send without core)
-    transport->set_serializer(std::make_unique<json_serializer>());
-
-    ec = transport->send_message(msg, other_node);
-    // Should succeed now (UDP doesn't require core for sending)
+    // Should succeed because factory sets default serializer
     EXPECT_EQ(ec, error_code::success);
 
     // Stop transport
