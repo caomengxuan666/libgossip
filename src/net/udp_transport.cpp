@@ -6,8 +6,24 @@
 #include <iostream>
 #include <thread>
 
-namespace gossip {
+namespace libgossip {
     namespace net {
+
+        // Helper to convert serialization_error to error_code
+        static error_code to_error_code(serialization_error se) {
+            switch (se) {
+                case serialization_error::success:
+                    return error_code::success;
+                case serialization_error::serialization_failed:
+                case serialization_error::deserialization_failed:
+                    return error_code::serialization_error;
+                case serialization_error::invalid_input:
+                case serialization_error::unsupported_format:
+                    return error_code::invalid_argument;
+                default:
+                    return error_code::serialization_error;
+            }
+        }
 
         // UDP transport implementation details
         class udp_transport::impl {
@@ -31,12 +47,10 @@ namespace gossip {
                     socket_.open(endpoint_.protocol());
                     socket_.bind(endpoint_);
 
-                    // Start IO context thread
                     io_thread_ = std::thread([this]() {
                         io_context_.run();
                     });
 
-                    // Start receiving messages
                     start_receive();
                     return error_code::success;
                 } catch (const std::exception &e) {
@@ -65,7 +79,7 @@ namespace gossip {
                 }
             }
 
-            void set_gossip_core(std::shared_ptr<libgossip::gossip_core> core) {
+            void set_gossip_core(std::shared_ptr<gossip_core> core) {
                 core_ = core;
             }
 
@@ -73,43 +87,38 @@ namespace gossip {
                 serializer_ = std::move(serializer);
             }
 
-            error_code send_message(const libgossip::gossip_message &msg,
-                                    const libgossip::node_view &target) {
-                // If no serializer is set, return error
+            error_code send_message(const gossip_message &msg,
+                                    const node_view &target) {
                 if (!serializer_) {
                     return error_code::serialization_error;
                 }
 
-                // Serialize message
                 std::vector<uint8_t> data;
-                error_code ec = serializer_->serialize(msg, data);
-                if (ec != error_code::success) {
-                    return ec;
+                auto se = serializer_->serialize(msg, data);
+                if (se != serialization_error::success) {
+                    return to_error_code(se);
                 }
 
                 // Prepare message with 4-byte length prefix
                 std::vector<uint8_t> packet;
                 packet.reserve(4 + data.size());
-                
-                // Add 4-byte length prefix (big-endian)
+
                 uint32_t length = static_cast<uint32_t>(data.size());
                 packet.push_back((length >> 24) & 0xFF);
                 packet.push_back((length >> 16) & 0xFF);
                 packet.push_back((length >> 8) & 0xFF);
                 packet.push_back(length & 0xFF);
-                
-                // Add serialized data
+
                 packet.insert(packet.end(), data.begin(), data.end());
 
-                // Send over UDP
                 asio::ip::udp::endpoint target_endpoint(
-                    asio::ip::make_address(target.ip), 
+                    asio::ip::make_address(target.ip),
                     static_cast<unsigned short>(target.port)
                 );
 
                 asio::error_code send_ec;
-                size_t bytes_sent = socket_.send_to(asio::buffer(packet), target_endpoint, 0, send_ec);
-                
+                socket_.send_to(asio::buffer(packet), target_endpoint, 0, send_ec);
+
                 if (send_ec) {
                     std::cerr << "Failed to send UDP message to " << target.ip << ":" << target.port
                               << ": " << send_ec.message() << std::endl;
@@ -119,10 +128,9 @@ namespace gossip {
                 return error_code::success;
             }
 
-            void send_message_async(const libgossip::gossip_message &msg,
-                                    const libgossip::node_view &target,
+            void send_message_async(const gossip_message &msg,
+                                    const node_view &target,
                                     std::function<void(error_code)> callback) {
-                // If no serializer is set, return error
                 if (!serializer_) {
                     if (callback) {
                         callback(error_code::serialization_error);
@@ -130,44 +138,38 @@ namespace gossip {
                     return;
                 }
 
-                // Serialize message
                 std::vector<uint8_t> data;
-                error_code ec = serializer_->serialize(msg, data);
-                if (ec != error_code::success) {
+                auto se = serializer_->serialize(msg, data);
+                if (se != serialization_error::success) {
                     if (callback) {
-                        callback(ec);
+                        callback(to_error_code(se));
                     }
                     return;
                 }
 
-                // Prepare message with 4-byte length prefix
                 std::vector<uint8_t> packet;
                 packet.reserve(4 + data.size());
-                
-                // Add 4-byte length prefix (big-endian)
+
                 uint32_t length = static_cast<uint32_t>(data.size());
                 packet.push_back((length >> 24) & 0xFF);
                 packet.push_back((length >> 16) & 0xFF);
                 packet.push_back((length >> 8) & 0xFF);
                 packet.push_back(length & 0xFF);
-                
-                // Add serialized data
+
                 packet.insert(packet.end(), data.begin(), data.end());
 
-                // Send asynchronously over UDP
                 asio::ip::udp::endpoint target_endpoint(
-                    asio::ip::make_address(target.ip), 
+                    asio::ip::make_address(target.ip),
                     static_cast<unsigned short>(target.port)
                 );
 
                 auto packet_ptr = std::make_shared<std::vector<uint8_t>>(std::move(packet));
-                
+
                 socket_.async_send_to(
                     asio::buffer(*packet_ptr),
                     target_endpoint,
                     [callback](const asio::error_code &send_ec, size_t /*bytes_sent*/) {
                         if (send_ec) {
-                            std::cerr << "Failed to async send UDP message: " << send_ec.message() << std::endl;
                             if (callback) {
                                 callback(error_code::network_error);
                             }
@@ -190,61 +192,42 @@ namespace gossip {
                                 handle_receive(bytes_transferred);
                             }
                             if (!error) {
-                                start_receive();// Continue receiving
+                                start_receive();
                             }
                         });
             }
 
             void handle_receive(std::size_t bytes_transferred) {
-                // Process received data
-                std::cout << "Received " << bytes_transferred << " bytes from "
-                          << remote_endpoint_.address().to_string() << ":"
-                          << remote_endpoint_.port() << std::endl;
-
-                // If we have gossip core and serializer, process the received message
                 if (core_ && serializer_) {
-                    // Convert received data to vector of uint8_t
-                    std::vector<uint8_t> data(receive_buffer_.begin(), receive_buffer_.begin() + static_cast<std::vector<char>::difference_type>(bytes_transferred));
+                    std::vector<uint8_t> data(receive_buffer_.begin(),
+                                              receive_buffer_.begin() + static_cast<std::vector<char>::difference_type>(bytes_transferred));
 
-                    // Parse message with 4-byte length prefix
                     size_t offset = 0;
                     while (offset + 4 <= data.size()) {
-                        // Read length prefix (big-endian)
                         uint32_t length = (static_cast<uint32_t>(data[offset]) << 24) |
                                          (static_cast<uint32_t>(data[offset + 1]) << 16) |
                                          (static_cast<uint32_t>(data[offset + 2]) << 8) |
                                          static_cast<uint32_t>(data[offset + 3]);
-                        
+
                         offset += 4;
 
-                        // Check if we have enough data for the message
                         if (offset + length > data.size()) {
-                            std::cerr << "Incomplete message, expected " << length 
-                                      << " bytes but only " << (data.size() - offset) << " available" << std::endl;
                             break;
                         }
 
-                        // Extract message data
-                        std::vector<uint8_t> message_data(data.begin() + offset, data.begin() + offset + length);
+                        std::vector<uint8_t> message_data(data.begin() + offset,
+                                                          data.begin() + offset + length);
                         offset += length;
 
-                        // Deserialize message
-                        libgossip::gossip_message msg;
-                        error_code ec = serializer_->deserialize(message_data, msg);
-                        if (ec == error_code::success) {
-                            std::cout << "[UDP Server] Successfully deserialized message, type: "
-                                      << static_cast<int>(msg.type) << ", entries: " << msg.entries.size() << std::endl;
-                            // Pass message to gossip core
+                        gossip_message msg;
+                        auto se = serializer_->deserialize(message_data, msg);
+                        if (se == serialization_error::success) {
                             auto now = std::chrono::steady_clock::now();
                             core_->handle_message(msg, now);
-                        } else {
-                            std::cerr << "[UDP Server] Failed to deserialize received message, error code: "
-                                      << libgossip::enum_to_string(ec) << std::endl;
                         }
                     }
                 }
 
-                // Continue receiving
                 start_receive();
             }
 
@@ -255,7 +238,7 @@ namespace gossip {
             std::thread io_thread_;
             std::vector<char> receive_buffer_;
             asio::ip::udp::endpoint remote_endpoint_;
-            std::shared_ptr<libgossip::gossip_core> core_;
+            std::shared_ptr<gossip_core> core_;
             std::unique_ptr<message_serializer> serializer_;
         };
 
@@ -274,18 +257,18 @@ namespace gossip {
             return pimpl_->stop();
         }
 
-        error_code udp_transport::send_message(const libgossip::gossip_message &msg,
-                                               const libgossip::node_view &target) {
+        error_code udp_transport::send_message(const gossip_message &msg,
+                                               const node_view &target) {
             return pimpl_->send_message(msg, target);
         }
 
-        void udp_transport::send_message_async(const libgossip::gossip_message &msg,
-                                               const libgossip::node_view &target,
+        void udp_transport::send_message_async(const gossip_message &msg,
+                                               const node_view &target,
                                                std::function<void(error_code)> callback) {
             pimpl_->send_message_async(msg, target, callback);
         }
 
-        void udp_transport::set_gossip_core(std::shared_ptr<libgossip::gossip_core> core) {
+        void udp_transport::set_gossip_core(std::shared_ptr<gossip_core> core) {
             pimpl_->set_gossip_core(core);
         }
 
@@ -293,5 +276,5 @@ namespace gossip {
             pimpl_->set_serializer(std::move(serializer));
         }
 
-    }// namespace net
-}// namespace gossip
+    } // namespace net
+} // namespace libgossip

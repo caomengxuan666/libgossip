@@ -10,6 +10,8 @@
 
 libgossip is a C++17 implementation of the Gossip protocol, designed for decentralized distributed systems. It provides robust node discovery, failure detection, and metadata propagation with an emphasis on reliability and performance.
 
+**Version: 1.4.0**
+
 ## Features
 
 - **Gossip Protocol Core**: Implements SWIM (Scalable Weakly-consistent Infection-style process group Membership) protocol for decentralized node membership management
@@ -17,6 +19,9 @@ libgossip is a C++17 implementation of the Gossip protocol, designed for decentr
 - **Metadata Propagation**: Distributes node metadata across the cluster using anti-entropy gossip
 - **Event System**: Notifies applications of node status changes and metadata updates
 - **Modular Design**: Separates core protocol implementation from network transport layer
+- **Pluggable Serialization**: Support for custom serialization formats (JSON, Protobuf, FlatBuffers, MessagePack)
+- **High-Level Manager**: `gossip_manager` class for easy lifecycle management
+- **Node ID Utilities**: Functions for generating, parsing, and converting node IDs
 - **C API**: Provides C bindings for non-C++ applications
 - **Python Bindings**: Provides Python bindings for easy integration with Python applications
 
@@ -102,6 +107,10 @@ sudo cmake --install .
 The core module implements the Gossip protocol logic including membership management, failure detection, and metadata propagation.
 
 - [gossip_core](include/core/gossip_core.hpp) - Main protocol implementation
+- [gossip_manager](include/core/gossip_manager.hpp) - High-level manager for easy lifecycle management
+- [gossip_config](include/core/gossip_config.hpp) - Configuration structure for gossip_manager
+- [node_id_utils](include/core/node_id_utils.hpp) - Node ID utilities (generate, parse, convert)
+- [message_serializer](include/core/message_serializer.hpp) - Abstract serializer interface (pluggable)
 - [node_view](include/core/gossip_core.hpp) - Node representation with metadata
 - [gossip_message](include/core/gossip_core.hpp) - Message structure for network transport
 
@@ -112,19 +121,21 @@ The network module provides transport layer implementations for the Gossip proto
 - [Transport interface](include/net/udp_transport.hpp) - Abstract transport interface
 - [UDP Transport](include/net/udp_transport.hpp) - UDP-based transport implementation using ASIO
 - [TCP Transport](include/net/tcp_transport.hpp) - TCP-based reliable transport implementation
-- [Transport Factory](include/net/transport_factory.hpp) - Factory for creating transport instances
-- [Message Serializer](include/net/udp_transport.hpp) - Abstract message serialization interface
+- [Transport Factory](include/net/transport_factory.hpp) - Factory for creating transport instances (recommended)
+- [Serializer Factory](include/net/serializer_factory.hpp) - Factory for registering and creating serializers
 - [JSON Serializer](include/net/json_serializer.hpp) - JSON-based message serialization implementation
 
 ## Usage Examples
 
 See the [examples](examples/) directory for detailed usage examples:
 
+- [GossipManager Example](examples/gossip_manager_example.cpp) - High-level manager API (recommended)
 - [Simple Cluster](examples/simple_cluster.cpp) - Basic full-mesh cluster setup
 - [Seed-based Cluster](examples/seed_cluster.cpp) - Real-world deployment using seed nodes
 - [Advanced Cluster](examples/advanced_cluster.cpp) - Advanced features including metadata and graceful leave
 - [Simple Cluster (C API)](examples/simple_cluster_c.c) - Using C API bindings
 - [Network Example](examples/network_example.cpp) - Network layer usage example
+- [Serializer Example](examples/serializer_example.cpp) - Custom serializer usage
 
 Each example demonstrates different aspects of library usage.
 
@@ -133,6 +144,10 @@ Each example demonstrates different aspects of library usage.
 ### Core Classes
 
 - [gossip_core](include/core/gossip_core.hpp) - Main protocol implementation
+- [gossip_manager](include/core/gossip_manager.hpp) - High-level manager for easy lifecycle management
+- [gossip_config](include/core/gossip_config.hpp) - Configuration structure
+- [node_id_utils](include/core/node_id_utils.hpp) - Node ID utilities
+- [message_serializer](include/core/message_serializer.hpp) - Abstract serializer interface (pluggable)
 - [node_view](include/core/gossip_core.hpp) - Node representation with metadata
 - [gossip_message](include/core/gossip_core.hpp) - Message structure for network transport
 
@@ -142,7 +157,7 @@ Each example demonstrates different aspects of library usage.
 - [udp_transport](include/net/udp_transport.hpp) - UDP-based transport implementation (**deprecated**, use transport_factory instead)
 - [tcp_transport](include/net/tcp_transport.hpp) - TCP-based transport implementation (**deprecated**, use transport_factory instead)
 - [transport_factory](include/net/transport_factory.hpp) - Factory for creating transport instances (recommended)
-- [message_serializer](include/net/udp_transport.hpp) - Abstract message serialization interface
+- [serializer_factory](include/net/serializer_factory.hpp) - Factory for registering and creating serializers
 - [json_serializer](include/net/json_serializer.hpp) - JSON-based message serialization implementation
 
 ### Logging System
@@ -187,11 +202,13 @@ LIBGOSSIP_LOG_INFO("Cluster size: " << core.size());
 
 Detailed examples are provided in the [examples](examples/) directory:
 
-1. **simple_cluster.cpp** - Shows basic cluster formation with full-mesh connectivity
-2. **seed_cluster.cpp** - Demonstrates real-world deployment using seed nodes
-3. **advanced_cluster.cpp** - Shows advanced features like metadata and graceful leave
-4. **simple_cluster_c.c** - Shows how to use the C API bindings
-5. **network_example.cpp** - Shows how to use the network layer and different transport protocols
+1. **gossip_manager_example.cpp** - Shows the high-level manager API (recommended)
+2. **simple_cluster.cpp** - Shows basic cluster formation with full-mesh connectivity
+3. **seed_cluster.cpp** - Demonstrates real-world deployment using seed nodes
+4. **advanced_cluster.cpp** - Shows advanced features like metadata and graceful leave
+5. **simple_cluster_c.c** - Shows how to use the C API bindings
+6. **network_example.cpp** - Shows how to use the network layer and different transport protocols
+7. **serializer_example.cpp** - Shows how to use custom serializers
 
 Building and running examples:
 
@@ -345,7 +362,7 @@ Current status: 97.5% line coverage, 97.5% function coverage (as of latest test 
 
 ## Python Bindings
 
-libgossip also provides Python bindings for easy integration with Python applications.
+libgossip also provides Python bindings (v0.4.0) for easy integration with Python applications.
 
 ### Building Python Bindings
 
@@ -369,19 +386,21 @@ Example Python usage:
 ```python
 import libgossip
 
-# Create a node view
-node = libgossip.node_view()
-node.ip = "127.0.0.1"
-node.port = 8000
+# Create a node using high-level SDK
+node = libgossip.create_node("127.0.0.1", 8000)
+node.start()
 
-# Create a gossip core instance
-core = libgossip.gossip_core(node)
+# Or use the JSON serializer directly
+serializer = libgossip.JsonSerializer()
+msg = libgossip.GossipMessage()
+msg.sender = libgossip.NodeId.generate_random()
+msg.type = libgossip.MessageType.PING
 
-# Drive the protocol periodically
-core.tick()
+error_code, data = serializer.serialize(msg)
+error_code, decoded_msg = serializer.deserialize(data)
 ```
 
-For more detailed examples, see the [Python examples](bindings/python/examples/) directory.
+For more detailed examples, see the [Python examples](bindings/python/) directory.
 
 ## Contributing
 

@@ -24,3 +24,7 @@ html/
 latex/
 venv/
 CMakeUserPresets.json
+scripts/serializer_factory.obj
+vc140.pdb
+*.obj
+*.pdb

@@ -103,7 +103,7 @@ namespace libgossip {
 
         // Record tick duration
         auto end_time = clock::now();
-        // Here we just recorded the time, but didn't store it, because we need to return it in get_stats
+        last_tick_duration_ = std::chrono::duration_cast<duration_ms>(end_time - start_time);
     }
 
     void gossip_core::tick_full_broadcast() {
@@ -497,12 +497,12 @@ namespace libgossip {
 
     gossip_stats gossip_core::get_stats() const {
         std::lock_guard<std::mutex> lock(mutex_);
-        
+
         gossip_stats stats;
         stats.known_nodes = nodes_.size();
         stats.sent_messages = sent_messages_;
         stats.received_messages = received_messages_;
-        // last_tick_duration cannot be accurately obtained, because we didn't record it in tick
+        stats.last_tick_duration = last_tick_duration_;
         return stats;
     }
 

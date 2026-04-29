@@ -23,7 +23,8 @@ try:
         TransportType,
         MessageSerializer,
         JsonSerializer,
-        ErrorCode
+        ErrorCode,
+        SerializationError
     )
 except ImportError:
     # In development environment, try to add the current directory to path
@@ -50,7 +51,8 @@ except ImportError:
         TransportType,
         MessageSerializer,
         JsonSerializer,
-        ErrorCode
+        ErrorCode,
+        SerializationError
     )
 
 # Re-export core classes with more Pythonic names
@@ -478,6 +480,7 @@ __all__ = [
     'MessageSerializer',
     'JsonSerializer',
     'ErrorCode',
+    'SerializationError',
     'message_handler',
     'event_handler',
     'message_type_filter',

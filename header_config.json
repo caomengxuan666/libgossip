@@ -22,6 +22,6 @@
         "include/net/tcp_transport.hpp",
         "include/net/udp_transport.hpp",
         "include/net/transport_factory.hpp",
-        "include/libgossip_api.h"
+        "include/core/config.hpp"
     ]
 }
