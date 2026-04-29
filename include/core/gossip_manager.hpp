@@ -46,6 +46,13 @@
 #include "net/udp_transport.hpp"
 #include "node_id_utils.hpp"
 
+#include <atomic>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
+
 namespace libgossip {
 
 /**
