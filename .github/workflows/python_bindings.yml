@@ -83,7 +83,7 @@ jobs:
         shell: cmd
         run: |
           cd bindings\python
-          python -m build --wheel --no-isolation
+          python -m pip wheel . --no-deps --no-build-isolation -w dist
 
       - name: Build Python wheel (Linux)
         if: matrix.os == 'ubuntu-latest'
