@@ -93,6 +93,11 @@ jobs:
         run: |
           cmake --build build --config ${{ matrix.build_type }} --parallel 4
 
+      - name: Clean Python package artifacts
+        shell: bash
+        run: |
+          rm -rf bindings/python/build bindings/python/dist bindings/python/*.egg-info bindings/src
+
       - name: Build Python package (Windows)
         if: matrix.is_windows
         shell: cmd
