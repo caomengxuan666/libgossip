@@ -76,7 +76,9 @@ class sdist(_sdist):
         super().make_release_tree(base_dir, files)
 
         release_native = Path(base_dir) / "native"
-        if (PROJECT_ROOT / "src").exists():
+        if has_native_bundle():
+            source_roots = [(NATIVE_BUNDLE_DIR, release_native)]
+        else:
             source_roots = [
                 (PROJECT_ROOT / "include", release_native / "include"),
                 (PROJECT_ROOT / "src", release_native / "src"),
@@ -93,13 +95,6 @@ class sdist(_sdist):
                     release_native / "third_party" / "magic_enum",
                 ),
             ]
-        elif has_native_bundle():
-            source_roots = [(NATIVE_BUNDLE_DIR, release_native)]
-        else:
-            raise FileNotFoundError(
-                "Cannot build libgossip sdist: native sources are missing. "
-                "Build from the repository root checkout or from an existing sdist."
-            )
 
         for source, destination in source_roots:
             if not source.exists():
