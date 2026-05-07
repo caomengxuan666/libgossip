@@ -98,14 +98,14 @@ jobs:
         shell: cmd
         run: |
           cd bindings\python
-          python -m build --wheel --sdist --no-isolation
+          python -m build --wheel --no-isolation
 
       - name: Build Python package (Linux)
         if: matrix.is_windows == false
         shell: bash
         run: |
           cd bindings/python
-          python -m build --wheel --sdist --no-isolation
+          python -m build --wheel --no-isolation
 
       - name: Test (Windows)
         if: matrix.is_windows

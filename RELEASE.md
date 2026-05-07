@@ -53,8 +53,9 @@ git push origin v1.4.0
 ```
 
 The Python publishing workflow builds wheels, builds the source distribution,
-checks metadata with Twine, verifies the sdist rebuild path, attaches release
-artifacts to the GitHub release, and publishes on version tags.
+checks metadata with Twine, attaches release artifacts to the GitHub release,
+and publishes on version tags. The local checklist above verifies the sdist
+rebuild path before tagging.
 
 ## Post-release Checks
 

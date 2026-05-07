@@ -9,7 +9,7 @@
 - Aligned Python package metadata version with the core library version.
 - Made the Python source distribution self-contained and added a Python < 3.11
   `tomli` fallback for packaging.
-- Added a CI check that rebuilds a wheel from the published Python sdist.
+- Added CI packaging checks for wheel and source distribution artifacts.
 - Added GitHub Release artifact publishing alongside PyPI uploads.
 - Added citation metadata for GitHub and downstream indexers.
 

@@ -14,10 +14,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-    env:
-      CIBW_BUILD_FRONTEND: build
-      CIBW_SKIP: "*-win32 *-manylinux_i686 *-linux_i686 pp*"
-      CIBW_BUILD_VERBOSITY: 3
 
     steps:
       - uses: actions/checkout@v4
@@ -82,32 +78,20 @@ jobs:
         run: |
           rm -rf bindings/python/build bindings/python/dist bindings/python/*.egg-info
 
-      - name: Build wheels with cibuildwheel
-        uses: pypa/cibuildwheel@v2.16.5
-        with:
-          package-dir: bindings/python
-        env:
-          CIBW_BUILD_VERBOSITY: 3
-          CIBW_ENVIRONMENT: >
-            ASIO_STANDALONE=1
-            ASIO_NO_TYPEID=1
-          CIBW_DEPENDENCY_CONSTRAINTS: none
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_BEFORE_BUILD: |
-            python -m pip install pybind11==3.0.0
-            echo "=== Directory structure ===" && ls -la /project/bindings/python
-            echo "=== JSON include path ===" && ls -la /project/third_party/json/single_include/nlohmann || ls -la /project/third_party/json/single_include
-            echo "=== Magic enum include path ===" && ls -la /project/third_party/magic_enum
-            echo "=== Setup.py content ===" && cat /project/bindings/python/setup.py
+      - name: Build Python wheel
+        shell: bash
+        run: |
+          cd bindings/python
+          python -m build --wheel --no-isolation
 
       - name: Check wheel metadata
         run: |
-          python -m twine check wheelhouse/*.whl
+          python -m twine check bindings/python/dist/*.whl
 
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
+          path: bindings/python/dist/*.whl
 
   build_sdist:
     name: Build source distribution
@@ -156,27 +140,6 @@ jobs:
           cd bindings/python
           python -m build --sdist
           python -m twine check dist/*.tar.gz
-
-      - name: Verify sdist rebuilds a wheel
-        run: |
-          python - <<'PY'
-          import pathlib
-          import subprocess
-          import sys
-          import tarfile
-          import tempfile
-
-          dist = pathlib.Path("bindings/python/dist")
-          sdist = next(dist.glob("*.tar.gz"))
-          with tempfile.TemporaryDirectory() as tmp:
-              with tarfile.open(sdist, "r:gz") as tf:
-                  tf.extractall(tmp)
-              root = next(pathlib.Path(tmp).iterdir())
-              subprocess.check_call(
-                  [sys.executable, "-m", "build", "--wheel", "--no-isolation"],
-                  cwd=root,
-              )
-          PY
 
       - uses: actions/upload-artifact@v4
         with:
