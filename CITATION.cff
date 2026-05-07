@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+title: "libgossip"
+message: "If you use libgossip in research or production, please cite this software."
+authors:
+  - name: "caomengxuan666"
+    email: "caomengxuan666@gmail.com"
+repository-code: "https://github.com/caomengxuan666/libgossip"
+url: "https://github.com/caomengxuan666/libgossip"
+license: "MIT"
+version: "1.4.0"

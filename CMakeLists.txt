@@ -37,7 +37,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 option(BUILD_EXAMPLES "Build example applications" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
 option(BUILD_TESTS "Build unit tests" ON)
-option(ENABLE_COVERAGE "Enable code coverage reporting" ON)
+option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 option(LIBGOSSIP_ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 option(LIBGOSSIP_ENABLE_INSTALL "Enable installation targets" ON)
 
@@ -129,8 +129,10 @@ target_link_libraries(libgossip_net PUBLIC libgossip)
 # Compiler-specific options
 # ============================================
 if(MSVC)
-    target_compile_options(libgossip PRIVATE /utf-8 /W4)
-    target_compile_options(libgossip_net PRIVATE /utf-8 /W4)
+    add_compile_definitions(_WIN32_WINNT=0x0601 WIN32_LEAN_AND_MEAN)
+    add_compile_options(/utf-8 /wd4251 /wd4996)
+    target_compile_options(libgossip PRIVATE /utf-8 /W4 /wd4251 /wd4996)
+    target_compile_options(libgossip_net PRIVATE /utf-8 /W4 /wd4251 /wd4996)
     
     if(LIBGOSSIP_ENABLE_WARNINGS_AS_ERRORS)
         target_compile_options(libgossip PRIVATE /WX)

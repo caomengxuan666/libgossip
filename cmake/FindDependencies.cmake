@@ -62,12 +62,7 @@ function(fetch_content_safe NAME)
 
   # Try to fetch content
   FetchContent_Declare(${NAME} ${ARGN} DOWNLOAD_EXTRACT_TIMESTAMP true)
-
-  FetchContent_GetProperties(${NAME})
-  if(NOT ${NAME}_POPULATED)
-    message(STATUS "Fetching ${NAME}...")
-    FetchContent_Populate(${NAME})
-  endif()
+  FetchContent_MakeAvailable(${NAME})
 endfunction()
 
 # Special handling for GoogleTest
@@ -99,16 +94,7 @@ function(find_or_fetch_googletest)
   fetch_content_safe(
     googletest URL
     https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip)
-
-  # Check if fetch was successful
-  FetchContent_GetProperties(googletest)
-  if(googletest_POPULATED)
-    # Add googletest directly to the build
-    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-    message(STATUS "Successfully fetched and added GoogleTest")
-  else()
-    message(WARNING "Failed to fetch GoogleTest")
-  endif()
+  message(STATUS "Successfully fetched and added GoogleTest")
 endfunction()
 
 # Function to setup ASIO from third_party directory

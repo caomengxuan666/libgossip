@@ -12,6 +12,10 @@ libgossip is a C++17 implementation of the Gossip protocol, designed for decentr
 
 **Version: 1.4.0**
 
+See [CHANGELOG.md](CHANGELOG.md) for release notes and
+[RELEASE.md](RELEASE.md) for the release checklist.
+Citation metadata is available in [CITATION.cff](CITATION.cff).
+
 ## Features
 
 - **Gossip Protocol Core**: Implements SWIM (Scalable Weakly-consistent Infection-style process group Membership) protocol for decentralized node membership management
@@ -30,7 +34,7 @@ libgossip is a C++17 implementation of the Gossip protocol, designed for decentr
 ### Prerequisites
 
 - C++17 compatible compiler (GCC 7+, Clang 5+, MSVC 2017+)
-- CMake 3.12+
+- CMake 3.15+
 
 ### Building from Source
 
@@ -334,9 +338,13 @@ To generate a code coverage report:
 
 4. Generate coverage report:
    ```bash
-   ninja coverage  # For Ninja builds
+   ninja coverage_report  # For Ninja builds
    # or
-   make coverage   # For Make builds
+   ninja test_and_coverage
+   # or
+   make coverage_report   # For Make builds
+   # or
+   make test_and_coverage
    ```
 
 5. View the HTML report by opening `build/coverage_report_filtered/index.html` in your browser.
@@ -357,12 +365,11 @@ focusing only on the actual project code.
 The project aims for:
 - Line coverage: >90%
 - Function coverage: >90%
-
-Current status: 97.5% line coverage, 97.5% function coverage (as of latest test run).
+Coverage is generated from the provided build targets and filtered report script.
 
 ## Python Bindings
 
-libgossip also provides Python bindings (v0.4.0) for easy integration with Python applications.
+libgossip also provides Python bindings for easy integration with Python applications.
 
 ### Building Python Bindings
 

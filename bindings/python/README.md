@@ -31,6 +31,16 @@ cmake .. -DBUILD_PYTHON_BINDINGS=ON
 cmake --build .
 ```
 
+To build distributable Python packages directly from the bindings directory:
+
+```bash
+pip install build wheel pybind11==3.0.0
+python -m build --wheel --sdist --no-isolation
+```
+
+The source distribution is self-contained, so downstream rebuilds do not need
+the original repository checkout.
+
 ## Running Examples
 
 ### For Users (After Installation)

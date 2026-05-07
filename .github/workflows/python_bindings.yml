@@ -157,6 +157,27 @@ jobs:
           python -m build --sdist
           python -m twine check dist/*.tar.gz
 
+      - name: Verify sdist rebuilds a wheel
+        run: |
+          python - <<'PY'
+          import pathlib
+          import subprocess
+          import sys
+          import tarfile
+          import tempfile
+
+          dist = pathlib.Path("bindings/python/dist")
+          sdist = next(dist.glob("*.tar.gz"))
+          with tempfile.TemporaryDirectory() as tmp:
+              with tarfile.open(sdist, "r:gz") as tf:
+                  tf.extractall(tmp)
+              root = next(pathlib.Path(tmp).iterdir())
+              subprocess.check_call(
+                  [sys.executable, "-m", "build", "--wheel", "--no-isolation"],
+                  cwd=root,
+              )
+          PY
+
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-sdist
@@ -167,6 +188,7 @@ jobs:
     environment: pypi
     runs-on: ubuntu-latest
     permissions:
+      contents: write
       id-token: write
 
     steps:
@@ -197,6 +219,13 @@ jobs:
           find dist -name "*linux_i686.whl" -delete
           echo "Remaining files:"
           ls -la dist/
+
+      - name: Publish GitHub release assets
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          fail_on_unmatched_files: true
 
       - name: Publish to Test PyPI
         run: |

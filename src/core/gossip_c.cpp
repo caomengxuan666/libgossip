@@ -1,5 +1,6 @@
 #include "core/gossip_core.h"
 #include "core/gossip_core.hpp"
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
@@ -46,14 +47,14 @@ LIBGOSSIP_API libgossip::node_view to_cpp_node_view(const gossip_node_view_t *c_
 LIBGOSSIP_API gossip_node_view_t to_c_node_view(const libgossip::node_view &cpp_node_view) {
     gossip_node_view_t c_node_view = {0};
     c_node_view.id = to_c_node_id(cpp_node_view.id);
-    std::strncpy(c_node_view.ip, cpp_node_view.ip.c_str(), sizeof(c_node_view.ip) - 1);
+    std::snprintf(c_node_view.ip, sizeof(c_node_view.ip), "%s", cpp_node_view.ip.c_str());
     c_node_view.port = cpp_node_view.port;
     c_node_view.config_epoch = cpp_node_view.config_epoch;
     c_node_view.heartbeat = cpp_node_view.heartbeat;
     c_node_view.version = cpp_node_view.version;
     c_node_view.status = static_cast<gossip_node_status_t>(cpp_node_view.status);
-    std::strncpy(c_node_view.role, cpp_node_view.role.c_str(), sizeof(c_node_view.role) - 1);
-    std::strncpy(c_node_view.region, cpp_node_view.region.c_str(), sizeof(c_node_view.region) - 1);
+    std::snprintf(c_node_view.role, sizeof(c_node_view.role), "%s", cpp_node_view.role.c_str());
+    std::snprintf(c_node_view.region, sizeof(c_node_view.region), "%s", cpp_node_view.region.c_str());
     // Stats are not part of node_view in C++, so we initialize them to 0
     c_node_view.sent_messages = 0;
     c_node_view.received_messages = 0;

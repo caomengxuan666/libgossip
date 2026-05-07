@@ -166,9 +166,10 @@ namespace libgossip {
                 auto packet_ptr = std::make_shared<std::vector<uint8_t>>(std::move(packet));
 
                 socket_.async_send_to(
-                    asio::buffer(*packet_ptr),
+                    asio::buffer(packet_ptr->data(), packet_ptr->size()),
                     target_endpoint,
-                    [callback](const asio::error_code &send_ec, size_t /*bytes_sent*/) {
+                    [packet_ptr, callback = std::move(callback)](const asio::error_code &send_ec, size_t /*bytes_sent*/) {
+                        (void)packet_ptr;
                         if (send_ec) {
                             if (callback) {
                                 callback(error_code::network_error);

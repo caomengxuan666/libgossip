@@ -1,5 +1,8 @@
 # Python bindings for libgossip
 
+# Silence pybind11 compatibility-mode warning on newer CMake.
+set(PYBIND11_FINDPYTHON ON)
+
 # Use bundled pybind11 from third_party directory
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/pybind11)
   message(STATUS "Using bundled pybind11 from third_party/pybind11")

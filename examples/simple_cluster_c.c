@@ -33,10 +33,10 @@ int main() {
     // Create node 1
     gossip_node_view_t node1_view = {0};
     memcpy(node1_view.id.data, "node1-node1-node1", 16);
-    strncpy(node1_view.ip, "127.0.0.1", sizeof(node1_view.ip) - 1);
+    snprintf(node1_view.ip, sizeof(node1_view.ip), "%s", "127.0.0.1");
     node1_view.port = 8001;
     node1_view.status = GOSSIP_NODE_ONLINE;
-    strncpy(node1_view.role, "master", sizeof(node1_view.role) - 1);
+    snprintf(node1_view.role, sizeof(node1_view.role), "%s", "master");
 
     node_context_t ctx1 = {0};
     ctx1.node_id = 1;
@@ -54,10 +54,10 @@ int main() {
     // Create node 2
     gossip_node_view_t node2_view = {0};
     memcpy(node2_view.id.data, "node2-node2-node2", 16);
-    strncpy(node2_view.ip, "127.0.0.2", sizeof(node2_view.ip) - 1);
+    snprintf(node2_view.ip, sizeof(node2_view.ip), "%s", "127.0.0.2");
     node2_view.port = 8002;
     node2_view.status = GOSSIP_NODE_ONLINE;
-    strncpy(node2_view.role, "replica", sizeof(node2_view.role) - 1);
+    snprintf(node2_view.role, sizeof(node2_view.role), "%s", "replica");
 
     node_context_t ctx2 = {0};
     ctx2.node_id = 2;
