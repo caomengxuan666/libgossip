@@ -17,6 +17,7 @@ Python bindings, and CI publishing workflows.
 Run these checks before tagging:
 
 ```bash
+pip install build wheel twine pybind11==3.0.0
 cmake --build build/msvc-debug --parallel
 ctest --test-dir build/msvc-debug --output-on-failure
 cd bindings/python
