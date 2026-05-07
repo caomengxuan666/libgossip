@@ -63,10 +63,14 @@ def native_path(*parts):
 
 class sdist(_sdist):
     def make_release_tree(self, base_dir, files):
-        filtered_files = [
-            path for path in files
-            if not path.endswith((".pyd", ".so", ".dylib"))
-        ]
+        filtered_files = []
+        for path in files:
+            candidate = Path(path)
+            if candidate.is_absolute() or ".." in candidate.parts:
+                continue
+            if path.endswith((".pyd", ".so", ".dylib")):
+                continue
+            filtered_files.append(path)
         files[:] = filtered_files
         self.filelist.files[:] = filtered_files
         super().make_release_tree(base_dir, files)
