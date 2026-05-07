@@ -51,7 +51,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-test.txt
-          pip install build wheel pybind11==3.0.0
+          python -m pip install --upgrade setuptools build wheel pybind11==3.0.0
 
       - name: Configure CMake (Windows)
         if: matrix.is_windows
