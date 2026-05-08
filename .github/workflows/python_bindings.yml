@@ -65,6 +65,13 @@ jobs:
           echo "Pybind11 version:"
           python -c "import pybind11; print(pybind11.__version__)"
 
+      - name: Install Linux wheel repair dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
+          python -m pip install auditwheel
+
       - name: Test local build
         shell: bash
         run: |
@@ -91,6 +98,11 @@ jobs:
         run: |
           cd bindings/python
           python -m build --wheel --no-isolation
+          mkdir -p repaired
+          python -m auditwheel repair dist/*.whl -w repaired
+          rm dist/*.whl
+          mv repaired/*.whl dist/
+          rmdir repaired
 
       - name: Check wheel metadata
         run: |
