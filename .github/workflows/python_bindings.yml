@@ -14,10 +14,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-    env:
-      CIBW_BUILD_FRONTEND: build
-      CIBW_SKIP: "*-win32 *-manylinux_i686 *-linux_i686 pp*"
-      CIBW_BUILD_VERBOSITY: 3
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +32,7 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          pip install build twine pybind11>=3.0.0
+          python -m pip install --upgrade setuptools build twine wheel pybind11==3.0.0
           # Get Python version (major.minor)
           PY_VERSION=$(python -c 'import sys; print(f"{sys.version_info.major}{sys.version_info.minor}")')
           # Set user site-packages path based on OS
@@ -69,6 +65,13 @@ jobs:
           echo "Pybind11 version:"
           python -c "import pybind11; print(pybind11.__version__)"
 
+      - name: Install Linux wheel repair dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
+          python -m pip install auditwheel
+
       - name: Test local build
         shell: bash
         run: |
@@ -82,32 +85,33 @@ jobs:
         run: |
           rm -rf bindings/python/build bindings/python/dist bindings/python/*.egg-info
 
-      - name: Build wheels with cibuildwheel
-        uses: pypa/cibuildwheel@v2.16.5
-        with:
-          package-dir: bindings/python
-        env:
-          CIBW_BUILD_VERBOSITY: 3
-          CIBW_ENVIRONMENT: >
-            ASIO_STANDALONE=1
-            ASIO_NO_TYPEID=1
-          CIBW_DEPENDENCY_CONSTRAINTS: none
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_BEFORE_BUILD: |
-            python -m pip install pybind11==3.0.0
-            echo "=== Directory structure ===" && ls -la /project/bindings/python
-            echo "=== JSON include path ===" && ls -la /project/third_party/json/single_include/nlohmann || ls -la /project/third_party/json/single_include
-            echo "=== Magic enum include path ===" && ls -la /project/third_party/magic_enum
-            echo "=== Setup.py content ===" && cat /project/bindings/python/setup.py
+      - name: Build Python wheel (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: |
+          cd bindings\python
+          python -m pip wheel . --no-deps --no-build-isolation -w dist
+
+      - name: Build Python wheel (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          cd bindings/python
+          python -m build --wheel --no-isolation
+          mkdir -p repaired
+          python -m auditwheel repair dist/*.whl -w repaired
+          rm dist/*.whl
+          mv repaired/*.whl dist/
+          rmdir repaired
 
       - name: Check wheel metadata
         run: |
-          python -m twine check wheelhouse/*.whl
+          python -m twine check bindings/python/dist/*.whl
 
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
+          path: bindings/python/dist/*.whl
 
   build_sdist:
     name: Build source distribution
@@ -134,7 +138,7 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine pybind11>=3.0.0
+          python -m pip install --upgrade setuptools build twine wheel pybind11==3.0.0
           PY_VERSION=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
           PY_USER_PATH="$HOME/.local/lib/python$PY_VERSION/site-packages"
           echo "PYTHONPATH=$PY_USER_PATH:$PYTHONPATH" >> $GITHUB_ENV
@@ -167,6 +171,7 @@ jobs:
     environment: pypi
     runs-on: ubuntu-latest
     permissions:
+      contents: write
       id-token: write
 
     steps:
@@ -197,6 +202,13 @@ jobs:
           find dist -name "*linux_i686.whl" -delete
           echo "Remaining files:"
           ls -la dist/
+
+      - name: Publish GitHub release assets
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          fail_on_unmatched_files: true
 
       - name: Publish to Test PyPI
         run: |

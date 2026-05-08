@@ -1,18 +1,21 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "pybind11==3.0.0"]
+requires = ["setuptools>=45", "wheel", "pybind11==3.0.0", "tomli; python_version < '3.11'"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "libgossip"
-version = "0.4.0"
+version = "1.4.0"
 description = "Python bindings for libgossip - a C++ Gossip protocol implementation"
 readme = "README.md"
 authors = [{name = "caomengxuan666", email = "caomengxuan666@gmail.com"}]
 license = {text = "MIT"}
+keywords = ["gossip", "swim", "distributed-systems", "membership", "failure-detection"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: C++",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -21,6 +24,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Networking",
 ]
 requires-python = ">=3.8"
 dependencies = [
@@ -33,10 +38,10 @@ test = ["pytest"]
 [project.urls]
 Homepage = "https://github.com/caomengxuan666/libgossip"
 Repository = "https://github.com/caomengxuan666/libgossip"
+Issues = "https://github.com/caomengxuan666/libgossip/issues"
+Changelog = "https://github.com/caomengxuan666/libgossip/blob/develop/CHANGELOG.md"
+ReleaseProcess = "https://github.com/caomengxuan666/libgossip/blob/develop/RELEASE.md"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["libgossip*"]
-
-[tool.setuptools.package-data]
-libgossip = ["*.so"]

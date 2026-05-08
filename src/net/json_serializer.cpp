@@ -148,7 +148,7 @@ namespace libgossip {
 
     void json_serializer::parse_node_id_from_hex(const std::string &hex_str, node_id_t &node_id) const {
         try {
-            std::fill(node_id.begin(), node_id.end(), 0);
+            node_id.fill(0);
 
             std::vector<std::string> bytes;
             size_t start = 0;

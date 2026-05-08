@@ -178,8 +178,9 @@ namespace libgossip {
 
                 asio::async_write(
                     *socket,
-                    asio::buffer(*packet_ptr),
-                    [callback](const asio::error_code &send_ec, size_t /*bytes_sent*/) {
+                    asio::buffer(packet_ptr->data(), packet_ptr->size()),
+                    [packet_ptr, callback = std::move(callback)](const asio::error_code &send_ec, size_t /*bytes_sent*/) {
+                        (void)packet_ptr;
                         if (send_ec) {
                             if (callback) {
                                 callback(error_code::network_error);

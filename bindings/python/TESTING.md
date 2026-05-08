@@ -41,7 +41,19 @@ make python_tests
 make build_and_test_python
 ```
 
-### Method 3: From the root directory
+### Method 3: Packaging smoke test
+
+To verify the Python packaging path used for releases:
+
+```bash
+pip install build wheel pybind11==3.0.0
+python -m build --wheel --sdist --no-isolation
+```
+
+The generated source distribution includes the native C++ sources and headers
+needed to rebuild the extension outside the repository checkout.
+
+### Method 4: From the root directory
 
 From the project root directory:
 
