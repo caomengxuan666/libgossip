@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(
   libgossip
-  VERSION 1.4.1
+  VERSION 1.4.2
   LANGUAGES CXX C
   DESCRIPTION "A production-ready C++ Gossip protocol library for distributed systems"
   HOMEPAGE_URL "https://github.com/caomengxuan666/libgossip"
@@ -89,7 +89,6 @@ set(LIBGOSSIP_NET_SRC
     src/core/gossip_manager.cpp)
 
 add_library(libgossip_net ${LIBGOSSIP_NET_SRC})
-target_compile_definitions(libgossip_net PRIVATE LIBGOSSIP_BUILD)
 
 add_library(libgossip::network ALIAS libgossip_net)
 
@@ -162,9 +161,15 @@ target_include_directories(
                          $<INSTALL_INTERFACE:include>)
 
 # ============================================
-# Compile definitions for DLL export
+# Compile definitions for library export/import
 # ============================================
-target_compile_definitions(libgossip PRIVATE LIBGOSSIP_BUILD)
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(libgossip PRIVATE LIBGOSSIP_BUILD)
+    target_compile_definitions(libgossip_net PRIVATE LIBGOSSIP_BUILD)
+else()
+    target_compile_definitions(libgossip PUBLIC LIBGOSSIP_STATIC_DEFINE)
+    target_compile_definitions(libgossip_net PUBLIC LIBGOSSIP_STATIC_DEFINE)
+endif()
 
 # ============================================
 # Target properties

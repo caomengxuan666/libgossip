@@ -7,7 +7,7 @@
 //            |___/                |_|    
 // Project: libgossip
 // Repository: https://github.com/caomengxuan666/libgossip
-// Version: 1.4.1
+// Version: 1.4.2
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT

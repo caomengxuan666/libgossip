@@ -10,7 +10,9 @@
 #define LIBGOSSIP_API_H
 
 // API Export/Import Macros
-#ifdef LIBGOSSIP_BUILD
+#ifdef LIBGOSSIP_STATIC_DEFINE
+    #define LIBGOSSIP_API
+#elif defined(LIBGOSSIP_BUILD)
     #ifdef _WIN32
         #define LIBGOSSIP_API __declspec(dllexport)
     #else

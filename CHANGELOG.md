@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.4.2
+
+- Fixed default static builds on Windows by disabling DLL import/export
+  annotations for static library consumers.
+
 ## 1.4.1
 
 - Fixed Windows shared-library builds by moving the high-level `gossip_manager`
